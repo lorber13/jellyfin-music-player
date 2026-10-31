@@ -20,7 +20,17 @@ Keep them consistent:
           <(grep -oE '^\| [A-Z]+-[0-9]+' docs/BACKLOG.md | tr -d '| ' | grep -v TECH | sort)
   ```
   The command should print nothing.
-- Commit messages, issues and PRs should reference item IDs (e.g. `PLY-04`).
+- Issues and PRs should reference backlog item IDs (e.g. `PLY-04`).
+
+## Commits
+
+Use [Conventional Commits](https://www.conventionalcommits.org/): `<type>(<optional scope>): <summary>`
+- Types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `style`, `revert`.
+- Summary in the imperative mood, lowercase, no trailing period.
+- Put backlog item IDs in a `Refs:` footer (e.g. `Refs: PLY-04, PLY-05`).
+- Breaking changes use `!` after the type/scope and a `BREAKING CHANGE:` footer.
+
+Example: `feat(player): add queue reordering` with the footer `Refs: PLY-04`.
 
 ## Product constraints that drive technical choices
 
