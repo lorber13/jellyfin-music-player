@@ -2,7 +2,7 @@
 
 Built from [FEATURES.md](FEATURES.md). Feature items keep their spec IDs. **TECH-xx** items are technical enablers that are not in the spec but are needed to deliver the features.
 
-**Sizes**: **S** ≤ 1 day · **M** 2–3 days · **L** about 1 week · **XL** more than 1 week (split before starting)
+**Sizes** are draft estimates, re-estimated just before each milestone starts: **S** ≤ 1 day · **M** 2–3 days · **L** about 1 week · **XL** more than 1 week (split before starting)
 
 **Milestones** are ordered by value. Each one ends with an app that works.
 
@@ -10,8 +10,8 @@ Built from [FEATURES.md](FEATURES.md). Feature items keep their spec IDs. **TECH
 |---|---|---|
 | [M1 Foundation](#m1--foundation-log-in-and-stream) | Log in and stream an album | 16 |
 | [M2 Player complete](#m2--library--player-complete) | Daily-driver online player | 24 |
-| [M3 Offline](#m3--offline) | Works without a connection | 16 |
-| [M4 Android Auto](#m4--android-auto) | Full car experience | 12 |
+| [M3 Android Auto](#m3--android-auto) | Full car experience (online) | 11 |
+| [M4 Offline](#m4--offline) | Works without a connection, on the phone and in the car | 17 |
 | [M5 Public release](#m5--public-release) | Ready for Play + F-Droid | 14 |
 | [M6 Extras](#m6--extras) | Nice-to-haves after the public release | 5 |
 
@@ -69,8 +69,25 @@ Done when: the whole library can be browsed and played online, with a full playe
 | SET-01 | Streaming quality limits (Wi-Fi / mobile data) | S |
 | SET-06 | Account settings | S |
 
-## M3 — Offline
-Done when: a pinned album plays in airplane mode, and plays and favorites sync after reconnecting.
+## M3 — Android Auto
+Done when: everything below works online in the Desktop Head Unit (DHU) and in a real car.
+
+| ID | Item | Size |
+|---|---|---|
+| TECH-04 | Android Auto test setup (DHU) and car checklist | S |
+| AUTO-01 | Browse tabs: Home, Albums, Playlists, Downloads | L |
+| AUTO-02 | Car Home sections | S |
+| AUTO-03 | Grids and lists with artwork | S |
+| AUTO-04 | Voice search | M |
+| AUTO-05 | Auto-resume on connect | S |
+| AUTO-06 | Shuffle, repeat and favorite buttons | M |
+| AUTO-07 | Driving-safe lists (≤ 100 items, A–Z groups, Shuffle all) | M |
+| AUTO-09 | Artwork in the car (offline part verified in M4) | M |
+| AUTO-10 | Clear car error messages | S |
+| SET-05 | Android Auto settings | S |
+
+## M4 — Offline
+Done when: a pinned album plays in airplane mode on the phone and in the car (with artwork, AUTO-08/AUTO-09), and plays and favorites sync after reconnecting.
 
 | ID | Item | Size |
 |---|---|---|
@@ -90,24 +107,7 @@ Done when: a pinned album plays in airplane mode, and plays and favorites sync a
 | SET-02 | Data saver toggle | S |
 | SET-03 | Download settings | S |
 | SET-04 | Cache settings | S |
-
-## M4 — Android Auto
-Done when: everything below works in the Desktop Head Unit (DHU) and in a real car, both online and offline.
-
-| ID | Item | Size |
-|---|---|---|
-| TECH-04 | Android Auto test setup (DHU) and car checklist | S |
-| AUTO-01 | Browse tabs: Home, Albums, Playlists, Downloads | L |
-| AUTO-02 | Car Home sections | S |
-| AUTO-03 | Grids and lists with artwork | S |
-| AUTO-04 | Voice search | M |
-| AUTO-05 | Auto-resume on connect | S |
-| AUTO-06 | Shuffle, repeat and favorite buttons | M |
-| AUTO-07 | Driving-safe lists (≤ 100 items, A–Z groups, Shuffle all) | M |
 | AUTO-08 | Offline car browsing | M |
-| AUTO-09 | Artwork in the car, including offline | M |
-| AUTO-10 | Clear car error messages | S |
-| SET-05 | Android Auto settings | S |
 
 ## M5 — Public release
 Done when: the app is published on Google Play and F-Droid.
