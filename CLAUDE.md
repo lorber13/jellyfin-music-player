@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 An Android music player for Jellyfin with offline playback and Android Auto support. The repo is at **specification stage**: there is no source code or Gradle build yet. Implementation starts with backlog item TECH-01 (project skeleton). When that lands, add build, lint and test commands (including how to run a single test) and a short architecture overview to this file.
 
+## Working agreement
+
+**Ask the user before making decisions.** Whenever a choice isn't already settled by the user or by the docs (scope, priorities, sizes, naming, file locations, dependencies, architecture, conventions), ask first and offer options with a recommendation. Don't pick one and report it afterwards.
+
 ## Documents
 
 - `docs/FEATURES.md` describes **what** the app does. It is grouped by area, and every feature has a stable ID (`ACC-`, `LIB-`, `PL-`, `PLY-`, `OFF-`, `AUTO-`, `SET-`, `UI-`). It also holds the out-of-scope list and the product constraints. It deliberately has no architecture and no release assignments.
