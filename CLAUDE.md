@@ -10,6 +10,8 @@ An Android music player for Jellyfin with offline playback and Android Auto supp
 
 **Ask the user before making decisions.** Whenever a choice isn't already settled by the user or by the docs (scope, priorities, sizes, naming, file locations, dependencies, architecture, conventions), ask first and offer options with a recommendation. Don't pick one and report it afterwards.
 
+**Fetch the latest Android Developers docs before implementing.** Android APIs, Jetpack libraries and recommended patterns change often. Before writing or changing Android code, Gradle config or dependency versions, read the relevant pages on developer.android.com (including AndroidX release notes and the Media3 and Android Auto guides) and follow what they currently say. Don't rely on memory. Say which pages you checked.
+
 ## Documents
 
 - `docs/FEATURES.md` describes **what** the app does. It is grouped by area, and every feature has a stable ID (`ACC-`, `LIB-`, `PL-`, `PLY-`, `OFF-`, `AUTO-`, `SET-`, `UI-`). It also holds the out-of-scope list and the product constraints. It deliberately has no architecture and no release assignments.
