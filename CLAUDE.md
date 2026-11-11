@@ -12,6 +12,8 @@ An Android music player for Jellyfin with offline playback and Android Auto supp
 
 **Fetch the latest Android Developers docs before implementing.** Android APIs, Jetpack libraries and recommended patterns change often. Before writing or changing Android code, Gradle config or dependency versions, read the relevant pages on developer.android.com (including AndroidX release notes and the Media3 and Android Auto guides) and follow what they currently say. Don't rely on memory. Say which pages you checked.
 
+**Deploy to the Pixel phone after implementing a feature.** Once a feature is implemented and the build passes, install the debug build on the user's Pixel phone over adb and launch it, so the user can check it on a real device. Pick the phone explicitly by its serial from `adb devices -l` when an emulator is also running. If the phone isn't connected or isn't authorized, say so and ask; don't silently deploy to an emulator instead. Report what was installed.
+
 ## Documents
 
 - `docs/FEATURES.md` describes **what** the app does. It is grouped by area, and every feature has a stable ID (`ACC-`, `LIB-`, `PL-`, `PLY-`, `OFF-`, `AUTO-`, `SET-`, `UI-`). It also holds the out-of-scope list and the product constraints. It deliberately has no architecture and no release assignments.
