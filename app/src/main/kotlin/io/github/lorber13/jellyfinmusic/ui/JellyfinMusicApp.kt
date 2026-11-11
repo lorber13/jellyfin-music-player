@@ -45,7 +45,12 @@ fun JellyfinMusicApp() {
                     selected = destination == navigationState.currentDestination,
                     onClick = { navigator.selectTopLevelDestination(destination) },
                     // The label next to the icon already describes it to screen readers.
-                    icon = { Icon(painterResource(destination.iconResource), contentDescription = null) },
+                    icon = {
+                        val isSelected = destination == navigationState.currentDestination
+                        val iconResource =
+                            if (isSelected) destination.selectedIconResource else destination.unselectedIconResource
+                        Icon(painterResource(iconResource), contentDescription = null)
+                    },
                     label = { Text(stringResource(destination.labelResource)) }
                 )
             }
