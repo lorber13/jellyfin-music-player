@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feature_albums_title">Albums</string>
+    <string name="feature_albums_sample_album">Sample album %1$s</string>
+</resources>

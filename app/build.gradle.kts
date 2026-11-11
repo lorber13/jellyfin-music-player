@@ -1,0 +1,39 @@
+plugins {
+    id("jellyfinmusic.android.application")
+    id("jellyfinmusic.android.compose")
+    id("jellyfinmusic.hilt")
+    alias(libs.plugins.kotlin.serialization)
+}
+
+android {
+    namespace = "io.github.lorber13.jellyfinmusic"
+
+    defaultConfig {
+        applicationId = "io.github.lorber13.jellyfinmusic"
+        versionCode = 1
+        versionName = "0.1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+}
+
+dependencies {
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:data"))
+    implementation(project(":feature:albums"))
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.compose.material3.adaptive.navigation.suite)
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
+    implementation(libs.kotlinx.serialization.core)
+
+    testImplementation(libs.junit)
+
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    // Compose UI tests bring in an older Espresso that crashes on Android 16 and newer.
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    debugImplementation(libs.compose.ui.test.manifest)
+}

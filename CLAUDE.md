@@ -4,7 +4,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-An Android music player for Jellyfin with offline playback and Android Auto support. The repo is at **specification stage**: there is no source code or Gradle build yet. Implementation starts with backlog item TECH-01 (project skeleton). When that lands, add build, lint and test commands (including how to run a single test) and a short architecture overview to this file.
+An Android music player for Jellyfin with offline playback and Android Auto support. The project skeleton (TECH-01) is in place: the app builds and shows an empty shell with four tabs. Features are implemented in the order of `docs/BACKLOG.md`.
+
+## Commands
+
+```bash
+./gradlew assembleDebug                 # build the debug APK
+./gradlew spotlessApply                 # format Kotlin and Gradle files (ktlint)
+./gradlew spotlessCheck lint            # formatting check + Android Lint (warnings are errors)
+./gradlew testDebugUnitTest             # all JVM unit tests
+./gradlew :app:testDebugUnitTest --tests '*.NavigatorTest'                        # one test class
+./gradlew :app:testDebugUnitTest --tests '*.NavigatorTest.goBack_closesTheCurrentScreen'   # one test
+./gradlew connectedDebugAndroidTest     # UI tests on a connected device (set ANDROID_SERIAL to pick one)
+./gradlew :app:connectedDebugAndroidTest \
+    -Pandroid.testInstrumentationRunnerArguments.class=io.github.lorber13.jellyfinmusic.AppShellNavigationTest
+```
+
+Run `spotlessCheck lint testDebugUnitTest assembleDebug` before calling a change done.
+
+## Architecture
+
+Single-activity Jetpack Compose app, application ID and base package `io.github.lorber13.jellyfinmusic`. minSdk 29, compileSdk and targetSdk 37, Java 17 bytecode.
+
+- **Modules**: `:app` (application, `MainActivity`, shell, navigation), `:core:designsystem` (theme, shared composables), `:core:data` (data layer, Hilt bindings), `:feature:albums` (one module per feature area; add more as backlog items need them). Features depend on `core` modules, never on each other or on `:app`.
+- **Build logic**: `build-logic/convention` holds convention plugins (`jellyfinmusic.android.application`, `.android.library`, `.android.compose`, `.hilt`). SDK levels, lint settings and common dependencies live there, not in module build files. All versions are in `gradle/libs.versions.toml`. AGP 9 has built-in Kotlin, so `org.jetbrains.kotlin.android` and kapt are not used; annotation processing is KSP.
+- **Navigation**: Navigation 3. Routes are `@Serializable` `NavKey`s. `TopLevelDestination` lists the tabs; `NavigationState` keeps one back stack per tab and `Navigator` mutates it (`app/.../navigation`). A feature module exposes its routes and an `EntryProviderScope<NavKey>.xxxEntries(...)` function that `JellyfinMusicApp` calls. The shell is a `NavigationSuiteScaffold` (bar on phones, rail on wider windows).
+- **DI**: Hilt. `JellyfinMusicApplication` is the `@HiltAndroidApp`.
+- **Resources**: strings and drawables in library modules are prefixed with the module name (`feature_albums_`, `designsystem_`). Icons are vector drawables; the `material-icons` artifacts are deprecated and not used.
+- **Backups are disabled** (`data_extraction_rules.xml`, `full_backup_content.xml`) because app data will hold server credentials.
 
 ## Working agreement
 
