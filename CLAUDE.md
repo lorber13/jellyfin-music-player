@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-An Android music player for Jellyfin with offline playback and Android Auto support. The project skeleton (TECH-01) is in place: the app builds and shows an empty shell with four tabs. Features are implemented in the order of `docs/BACKLOG.md`.
+An Android music player for Jellyfin with offline playback and Android Auto support. The project skeleton (TECH-01) is in place: the app builds and shows an empty shell with four tabs. CI (TECH-02, `.github/workflows/ci.yml`) runs the done-checks below on every push to `main` and on every PR. Features are implemented in the order of `docs/BACKLOG.md`.
 
 ## Commands
 

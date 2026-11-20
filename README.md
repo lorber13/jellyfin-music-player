@@ -29,6 +29,8 @@ The app is in early development. Today it is an empty shell with navigation; see
 ./gradlew connectedDebugAndroidTest   # UI tests, needs a connected device
 ```
 
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs formatting, lint, unit tests and the debug build on every push to `main` and on every pull request.
+
 ## Project layout
 
 | Module              | Contents                                               |
