@@ -19,3 +19,6 @@ captures/
 keystore.properties
 
 .DS_Store
+
+# Local Jellyfin test server: generated music and server data
+dev/test-server/data/

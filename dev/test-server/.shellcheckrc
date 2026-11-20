@@ -1,0 +1,2 @@
+# Resolve `source common.sh` relative to the script, wherever shellcheck runs from.
+source-path=SCRIPTDIR

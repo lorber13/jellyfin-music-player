@@ -1,0 +1,18 @@
+# Local Jellyfin server for development. Start it with ./up.sh, which sets the
+# variables below; see README.md.
+name: jellyfin-music-test-server
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:${JELLYFIN_VERSION:?run this through up.sh}
+    # Run as the developer so the files under data/ are not owned by root.
+    user: "${HOST_UID:?}:${HOST_GID:?}"
+    ports:
+      # Loopback only: the test user has a weak password. The phone reaches
+      # the server through `adb reverse`, the emulator through 10.0.2.2.
+      - "127.0.0.1:8096:8096"
+    volumes:
+      # One config per version, so switching versions never migrates a database.
+      - ./data/${JELLYFIN_VERSION}/config:/config
+      - ./data/${JELLYFIN_VERSION}/cache:/cache
+      - ./data/music:/media/music:ro

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-An Android music player for Jellyfin with offline playback and Android Auto support. The project skeleton (TECH-01) is in place: the app builds and shows an empty shell with four tabs. CI (TECH-02, `.github/workflows/ci.yml`) runs the done-checks below on every push to `main` and on every PR. Features are implemented in the order of `docs/BACKLOG.md`.
+An Android music player for Jellyfin with offline playback and Android Auto support. The project skeleton (TECH-01) is in place: the app builds and shows an empty shell with four tabs. CI (TECH-02, `.github/workflows/ci.yml`) runs the done-checks below on every push to `main` and on every PR. A local Jellyfin test server with a generated music library (TECH-03) lives in `dev/test-server/`. Features are implemented in the order of `docs/BACKLOG.md`.
 
 ## Commands
 
@@ -18,6 +18,10 @@ An Android music player for Jellyfin with offline playback and Android Auto supp
 ./gradlew connectedDebugAndroidTest     # UI tests on a connected device (set ANDROID_SERIAL to pick one)
 ./gradlew :app:connectedDebugAndroidTest \
     -Pandroid.testInstrumentationRunnerArguments.class=io.github.lorber13.jellyfinmusic.AppShellNavigationTest
+
+dev/test-server/up.sh                   # local Jellyfin server (Docker) at localhost:8096, user test/test; also runs adb reverse
+JELLYFIN_VERSION=10.8.13 dev/test-server/up.sh   # another server version (10.9.11 = oldest supported, 10.8.x for ACC-07)
+dev/test-server/down.sh                 # stop it; reset.sh deletes its data (--all also the generated music)
 ```
 
 Run `spotlessCheck lint testDebugUnitTest assembleDebug` before calling a change done.

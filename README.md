@@ -31,6 +31,10 @@ The app is in early development. Today it is an empty shell with navigation; see
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs formatting, lint, unit tests and the debug build on every push to `main` and on every pull request.
 
+## Local test server
+
+`dev/test-server/up.sh` starts a Jellyfin server in Docker with a generated sample music library and the user `test` / `test`. A phone connected over USB reaches it at `http://localhost:8096`, the emulator at `http://10.0.2.2:8096`. See [dev/test-server/README.md](dev/test-server/README.md).
+
 ## Project layout
 
 | Module              | Contents                                               |
