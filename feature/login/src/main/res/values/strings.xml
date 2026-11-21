@@ -3,10 +3,11 @@
     <!-- Title of the first screen the user sees, where they enter the address of their
          Jellyfin server. -->
     <string name="feature_login_server_title">Connect to your server</string>
-    <!-- Explanation under the title. The two example addresses must stay as they are. -->
-    <string name="feature_login_server_description">Enter the address of your Jellyfin server, for example <xliff:g id="example_domain">music.example.com</xliff:g> or <xliff:g id="example_ip">192.168.1.10:8096</xliff:g>.</string>
     <!-- Label of the text field for the server address. -->
     <string name="feature_login_server_address_label">Server address</string>
+    <!-- Example shown in grey inside the empty server address field. A reserved example domain,
+         the same in every language. -->
+    <string name="feature_login_server_address_placeholder" translatable="false">music.example.com</string>
     <!-- Button that checks the entered server address. -->
     <string name="feature_login_connect">Connect</string>
     <!-- Shown on the connect button while the app tries to reach the server. -->

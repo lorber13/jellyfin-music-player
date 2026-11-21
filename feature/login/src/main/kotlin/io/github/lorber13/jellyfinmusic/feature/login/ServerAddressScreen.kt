@@ -129,16 +129,13 @@ private fun ColumnScope.AddressForm(
     onConnect: () -> Unit,
     onAllowLocalNetworkAccess: () -> Unit
 ) {
-    Text(
-        text = stringResource(R.string.feature_login_server_description),
-        style = MaterialTheme.typography.bodyLarge
-    )
     OutlinedTextField(
         value = address,
         onValueChange = onAddressChange,
         modifier = Modifier.fillMaxWidth(),
         enabled = !isChecking,
         label = { Text(stringResource(R.string.feature_login_server_address_label)) },
+        placeholder = { Text(stringResource(R.string.feature_login_server_address_placeholder)) },
         isError = failure != null,
         supportingText = failure?.let { reason ->
             {
