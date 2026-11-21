@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Matches the surface color of the default Material 3 dark scheme. -->
-    <color name="window_background">#141218</color>
+    <!-- Matches the surface color of the app's fixed dark palette (Color.kt). -->
+    <color name="window_background">#161217</color>
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The wallpaper-based surface color, the same resource Compose's dynamic light scheme
+         uses on Android 14+. On Android 12 and 13 Compose derives the surface from the neutral
+         palette instead, which has no exact resource, so those versions keep the fixed palette's
+         near-white surface. -->
+    <color name="window_background">@android:color/system_surface_light</color>
+</resources>
