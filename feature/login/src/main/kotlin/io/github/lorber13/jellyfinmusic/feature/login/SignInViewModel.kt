@@ -23,8 +23,10 @@ internal sealed interface SignInUiState {
     /** The user is filling in the form. [failure] explains why the last attempt failed, if it did. */
     data class Editing(val failure: SignInFailure? = null) : SignInUiState
 
-    /** Also the state after success, until the app replaces the sign-in flow with the shell. */
     data object SigningIn : SignInUiState
+
+    /** The session is set up; the screen hands over to the app. */
+    data object SignedIn : SignInUiState
 }
 
 @HiltViewModel(assistedFactory = SignInViewModel.Factory::class)
@@ -60,18 +62,19 @@ internal class SignInViewModel @AssistedInject constructor(
     }
 
     /**
-     * Signs in with the entered username and password. Does nothing while signing in or when the
-     * username is blank. The password may be empty: Jellyfin allows users without one.
+     * Signs in with the entered username and password. Does nothing while signing in, after
+     * success, or when the username is blank. The password may be empty: Jellyfin allows users
+     * without one.
      */
     fun signIn() {
         // Keyboards and password managers sometimes add a trailing space; Jellyfin names never have one.
         val name = username.text.toString().trim()
-        if (uiState == SignInUiState.SigningIn || name.isEmpty()) return
+        if (uiState !is SignInUiState.Editing || name.isEmpty()) return
         uiState = SignInUiState.SigningIn
         viewModelScope.launch {
-            val result = sessionRepository.signIn(server, name, password.text.toString())
-            if (result is SignInResult.Failed) {
-                uiState = SignInUiState.Editing(failure = result.reason)
+            uiState = when (val result = sessionRepository.signIn(server, name, password.text.toString())) {
+                is SignInResult.Success -> SignInUiState.SignedIn
+                is SignInResult.Failed -> SignInUiState.Editing(failure = result.reason)
             }
         }
     }

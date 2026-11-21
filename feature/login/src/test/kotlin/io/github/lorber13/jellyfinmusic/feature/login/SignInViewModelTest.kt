@@ -77,8 +77,21 @@ class SignInViewModelTest {
         runCurrent()
 
         assertEquals(listOf(Attempt(server, "test", " secret ")), sessionRepository.attempts)
-        // The app replaces the sign-in flow once the session is set, so the screen stays busy.
-        assertEquals(SignInUiState.SigningIn, viewModel.uiState)
+        assertEquals(SignInUiState.SignedIn, viewModel.uiState)
+    }
+
+    @Test
+    fun signInAfterSuccess_isIgnored() = runTest(dispatcher) {
+        sessionRepository.result = SignInResult.Success(session)
+        val viewModel = createViewModel()
+        viewModel.username.setTextAndPlaceCursorAtEnd("test")
+        viewModel.signIn()
+        runCurrent()
+
+        viewModel.signIn()
+        runCurrent()
+
+        assertEquals(1, sessionRepository.attempts.size)
     }
 
     @Test

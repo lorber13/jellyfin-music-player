@@ -19,17 +19,21 @@ data class SignInRoute(val serverAddress: String, val serverName: String, val se
 }
 
 /**
- * Registers the screens of the sign-in flow with the app's navigation. Signing in itself needs
- * no callback: the app shows the shell as soon as the data layer holds a session.
+ * Registers the screens of the sign-in flow with the app's navigation.
  *
  * @param onServerConnected the user found their server and wants to sign in to it.
+ * @param onSignedIn the user is signed in; the data layer holds the session.
  * @param onChangeServer the user wants to go back from signing in and pick another server.
  */
-fun EntryProviderScope<NavKey>.loginEntries(onServerConnected: (JellyfinServer) -> Unit, onChangeServer: () -> Unit) {
+fun EntryProviderScope<NavKey>.loginEntries(
+    onServerConnected: (JellyfinServer) -> Unit,
+    onSignedIn: () -> Unit,
+    onChangeServer: () -> Unit
+) {
     entry<ServerAddressRoute> {
         ServerAddressScreen(onContinue = onServerConnected)
     }
     entry<SignInRoute> { route ->
-        SignInScreen(route = route, onChangeServer = onChangeServer)
+        SignInScreen(route = route, onSignedIn = onSignedIn, onChangeServer = onChangeServer)
     }
 }

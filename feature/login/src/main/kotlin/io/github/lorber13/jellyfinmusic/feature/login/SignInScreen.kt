@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,17 +59,23 @@ import io.github.lorber13.jellyfinmusic.core.data.session.SignInFailure
 import io.github.lorber13.jellyfinmusic.core.designsystem.theme.JellyfinMusicTheme
 
 @Composable
-internal fun SignInScreen(route: SignInRoute, onChangeServer: () -> Unit) {
+internal fun SignInScreen(route: SignInRoute, onSignedIn: () -> Unit, onChangeServer: () -> Unit) {
     val viewModel = hiltViewModel<SignInViewModel, SignInViewModel.Factory>(
         creationCallback = { factory -> factory.create(route.server) }
     )
+    val uiState = viewModel.uiState
+    // Signing in is a state, not a one-off event, as the UI events guidance recommends. Navigating
+    // away removes this screen from the back stack, so the callback can't run twice.
+    LaunchedEffect(uiState) {
+        if (uiState == SignInUiState.SignedIn) onSignedIn()
+    }
     SignInContent(
         server = viewModel.server,
         username = viewModel.username,
         password = viewModel.password,
         isPasswordVisible = viewModel.isPasswordVisible,
         publicUsers = viewModel.publicUsers,
-        uiState = viewModel.uiState,
+        uiState = uiState,
         onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
         onPickUser = viewModel::pickUser,
         onSignIn = viewModel::signIn,
@@ -90,7 +97,8 @@ internal fun SignInContent(
     onChangeServer: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isSigningIn = uiState == SignInUiState.SigningIn
+    // Stays busy after success too, until the app has moved on to the next screen.
+    val isSigningIn = uiState !is SignInUiState.Editing
     val failure = (uiState as? SignInUiState.Editing)?.failure
     val passwordFocusRequester = remember { FocusRequester() }
 
