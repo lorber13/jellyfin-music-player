@@ -22,9 +22,11 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SuggestionChip
@@ -59,7 +61,12 @@ import io.github.lorber13.jellyfinmusic.core.data.session.SignInFailure
 import io.github.lorber13.jellyfinmusic.core.designsystem.theme.JellyfinMusicTheme
 
 @Composable
-internal fun SignInScreen(route: SignInRoute, onSignedIn: () -> Unit, onChangeServer: () -> Unit) {
+internal fun SignInScreen(
+    route: SignInRoute,
+    onSignedIn: () -> Unit,
+    onChangeServer: () -> Unit,
+    onUseQuickConnect: () -> Unit
+) {
     val viewModel = hiltViewModel<SignInViewModel, SignInViewModel.Factory>(
         creationCallback = { factory -> factory.create(route.server) }
     )
@@ -75,11 +82,13 @@ internal fun SignInScreen(route: SignInRoute, onSignedIn: () -> Unit, onChangeSe
         password = viewModel.password,
         isPasswordVisible = viewModel.isPasswordVisible,
         publicUsers = viewModel.publicUsers,
+        isQuickConnectAvailable = viewModel.isQuickConnectAvailable,
         uiState = uiState,
         onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
         onPickUser = viewModel::pickUser,
         onSignIn = viewModel::signIn,
-        onChangeServer = onChangeServer
+        onChangeServer = onChangeServer,
+        onUseQuickConnect = onUseQuickConnect
     )
 }
 
@@ -90,11 +99,13 @@ internal fun SignInContent(
     password: TextFieldState,
     isPasswordVisible: Boolean,
     publicUsers: List<PublicUser>,
+    isQuickConnectAvailable: Boolean,
     uiState: SignInUiState,
     onTogglePasswordVisibility: () -> Unit,
     onPickUser: (PublicUser) -> Unit,
     onSignIn: () -> Unit,
     onChangeServer: () -> Unit,
+    onUseQuickConnect: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Stays busy after success too, until the app has moved on to the next screen.
@@ -149,6 +160,16 @@ internal fun SignInContent(
                         isEnabled = username.text.isNotBlank() && !isSigningIn,
                         onClick = onSignIn
                     )
+                }
+                if (isQuickConnectAvailable) {
+                    HorizontalDivider()
+                    OutlinedButton(
+                        onClick = onUseQuickConnect,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSigningIn
+                    ) {
+                        Text(stringResource(R.string.feature_login_use_quick_connect))
+                    }
                 }
             }
         }
@@ -308,11 +329,13 @@ private fun SignInWithUsersPreview() {
             password = TextFieldState("secret"),
             isPasswordVisible = false,
             publicUsers = listOf(PublicUser("1", "alice"), PublicUser("2", "Bob")),
+            isQuickConnectAvailable = true,
             uiState = SignInUiState.Editing(failure = SignInFailure.WRONG_CREDENTIALS),
             onTogglePasswordVisibility = {},
             onPickUser = {},
             onSignIn = {},
-            onChangeServer = {}
+            onChangeServer = {},
+            onUseQuickConnect = {}
         )
     }
 }
@@ -327,11 +350,13 @@ private fun SignInWithoutUsersPreview() {
             password = TextFieldState(),
             isPasswordVisible = false,
             publicUsers = emptyList(),
+            isQuickConnectAvailable = false,
             uiState = SignInUiState.Editing(),
             onTogglePasswordVisibility = {},
             onPickUser = {},
             onSignIn = {},
-            onChangeServer = {}
+            onChangeServer = {},
+            onUseQuickConnect = {}
         )
     }
 }

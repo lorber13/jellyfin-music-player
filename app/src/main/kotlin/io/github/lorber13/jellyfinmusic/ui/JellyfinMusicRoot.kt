@@ -12,6 +12,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import io.github.lorber13.jellyfinmusic.feature.login.QuickConnectRoute
 import io.github.lorber13.jellyfinmusic.feature.login.ServerAddressRoute
 import io.github.lorber13.jellyfinmusic.feature.login.SignInRoute
 import io.github.lorber13.jellyfinmusic.feature.login.loginEntries
@@ -49,7 +50,9 @@ fun JellyfinMusicRoot(viewModel: RootViewModel = hiltViewModel()) {
                 onServerConnected = { server -> backStack.add(SignInRoute(server)) },
                 // Back from the shell leaves the app instead of returning to the sign-in screens.
                 onSignedIn = { backStack.replaceAllWith(AppShellRoute) },
-                onChangeServer = { backStack.removeLastOrNull() }
+                onChangeServer = { backStack.removeLastOrNull() },
+                onUseQuickConnect = { server -> backStack.add(QuickConnectRoute(server)) },
+                onUsePassword = { backStack.removeLastOrNull() }
             )
             entry<AppShellRoute> {
                 // The shell never runs without a signed-in user. Without a session the entry stays

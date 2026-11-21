@@ -71,6 +71,23 @@ class SignInContentTest {
     }
 
     @Test
+    fun quickConnectUnavailable_hidesTheButton() {
+        showContent(isQuickConnectAvailable = false)
+
+        quickConnectButton().assertDoesNotExist()
+    }
+
+    @Test
+    fun quickConnectAvailable_buttonOpensQuickConnect() {
+        var opened = false
+        showContent(isQuickConnectAvailable = true, onUseQuickConnect = { opened = true })
+
+        quickConnectButton().performClick()
+
+        assertEquals(true, opened)
+    }
+
+    @Test
     fun eyeButton_switchesBetweenShowAndHide() {
         composeRule.setContent {
             var isVisible by remember { mutableStateOf(false) }
@@ -81,11 +98,13 @@ class SignInContentTest {
                     password = TextFieldState("secret"),
                     isPasswordVisible = isVisible,
                     publicUsers = emptyList(),
+                    isQuickConnectAvailable = false,
                     uiState = SignInUiState.Editing(),
                     onTogglePasswordVisibility = { isVisible = !isVisible },
                     onPickUser = {},
                     onSignIn = {},
-                    onChangeServer = {}
+                    onChangeServer = {},
+                    onUseQuickConnect = {}
                 )
             }
         }
@@ -95,14 +114,19 @@ class SignInContentTest {
         composeRule.onNode(hasContentDescription(string(R.string.feature_login_hide_password))).assertExists()
     }
 
+    private fun quickConnectButton() =
+        composeRule.onNode(hasText(string(R.string.feature_login_use_quick_connect)) and hasClickAction())
+
     private fun signInButton() =
         composeRule.onNode(hasText(string(R.string.feature_login_sign_in)) and hasClickAction())
 
     private fun showContent(
         username: TextFieldState = TextFieldState("test"),
         publicUsers: List<PublicUser> = emptyList(),
+        isQuickConnectAvailable: Boolean = false,
         uiState: SignInUiState = SignInUiState.Editing(),
-        onPickUser: (PublicUser) -> Unit = {}
+        onPickUser: (PublicUser) -> Unit = {},
+        onUseQuickConnect: () -> Unit = {}
     ) {
         composeRule.setContent {
             JellyfinMusicTheme {
@@ -112,11 +136,13 @@ class SignInContentTest {
                     password = TextFieldState(),
                     isPasswordVisible = false,
                     publicUsers = publicUsers,
+                    isQuickConnectAvailable = isQuickConnectAvailable,
                     uiState = uiState,
                     onTogglePasswordVisibility = {},
                     onPickUser = onPickUser,
                     onSignIn = {},
-                    onChangeServer = {}
+                    onChangeServer = {},
+                    onUseQuickConnect = onUseQuickConnect
                 )
             }
         }

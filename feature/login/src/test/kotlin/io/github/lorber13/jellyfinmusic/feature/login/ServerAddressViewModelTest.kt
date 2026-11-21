@@ -133,5 +133,7 @@ class ServerAddressViewModelTest {
         }
 
         override suspend fun getPublicUsers(serverAddress: String): List<PublicUser> = emptyList()
+
+        override suspend fun isQuickConnectEnabled(serverAddress: String): Boolean = false
     }
 }

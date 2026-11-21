@@ -5,6 +5,8 @@ import io.github.lorber13.jellyfinmusic.core.data.server.JellyfinServer
 import io.github.lorber13.jellyfinmusic.core.data.server.PublicUser
 import io.github.lorber13.jellyfinmusic.core.data.server.ServerLookupResult
 import io.github.lorber13.jellyfinmusic.core.data.server.ServerRepository
+import io.github.lorber13.jellyfinmusic.core.data.session.QuickConnectRequest
+import io.github.lorber13.jellyfinmusic.core.data.session.QuickConnectStartResult
 import io.github.lorber13.jellyfinmusic.core.data.session.SessionRepository
 import io.github.lorber13.jellyfinmusic.core.data.session.SignInFailure
 import io.github.lorber13.jellyfinmusic.core.data.session.SignInResult
@@ -54,6 +56,27 @@ class SignInViewModelTest {
         runCurrent()
 
         assertEquals(listOf(PublicUser("1", "test")), viewModel.publicUsers)
+    }
+
+    @Test
+    fun quickConnect_isOfferedWhenTheServerAllowsIt() = runTest(dispatcher) {
+        serverRepository.isQuickConnectEnabled = true
+
+        val viewModel = createViewModel()
+        assertEquals(false, viewModel.isQuickConnectAvailable)
+        runCurrent()
+
+        assertEquals(true, viewModel.isQuickConnectAvailable)
+    }
+
+    @Test
+    fun quickConnect_isNotOfferedWhenTheServerTurnedItOff() = runTest(dispatcher) {
+        serverRepository.isQuickConnectEnabled = false
+
+        val viewModel = createViewModel()
+        runCurrent()
+
+        assertEquals(false, viewModel.isQuickConnectAvailable)
     }
 
     @Test
@@ -169,14 +192,26 @@ class SignInViewModelTest {
             attempts += Attempt(server, username, password)
             return result
         }
+
+        override suspend fun startQuickConnect(server: JellyfinServer): QuickConnectStartResult =
+            error("The sign-in screen doesn't use Quick Connect")
+
+        override suspend fun checkQuickConnect(server: JellyfinServer, request: QuickConnectRequest) =
+            error("The sign-in screen doesn't use Quick Connect")
+
+        override suspend fun signInWithQuickConnect(server: JellyfinServer, request: QuickConnectRequest) =
+            error("The sign-in screen doesn't use Quick Connect")
     }
 
     private class FakeServerRepository : ServerRepository {
         var publicUsers: List<PublicUser> = emptyList()
+        var isQuickConnectEnabled = false
 
         override suspend fun findServer(address: String): ServerLookupResult =
             error("The sign-in screen doesn't look up servers")
 
         override suspend fun getPublicUsers(serverAddress: String): List<PublicUser> = publicUsers
+
+        override suspend fun isQuickConnectEnabled(serverAddress: String): Boolean = isQuickConnectEnabled
     }
 }

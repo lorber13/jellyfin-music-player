@@ -1,26 +1,34 @@
 package io.github.lorber13.jellyfinmusic.core.data.server
 
+import io.github.lorber13.jellyfinmusic.core.data.di.IoDispatcher
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import org.jellyfin.sdk.Jellyfin
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.exception.InvalidContentException
 import org.jellyfin.sdk.api.client.exception.InvalidStatusException
 import org.jellyfin.sdk.api.client.exception.SecureConnectionException
+import org.jellyfin.sdk.api.client.extensions.authenticationApi
 import org.jellyfin.sdk.api.client.extensions.userApi
 import org.jellyfin.sdk.discovery.RecommendedServerInfo
 import org.jellyfin.sdk.discovery.RecommendedServerInfoScore
 
-internal class JellyfinServerRepository @Inject constructor(private val jellyfin: Jellyfin) : ServerRepository {
+// The SDK reads responses on the calling thread, so every call runs on the IO dispatcher.
+internal class JellyfinServerRepository @Inject constructor(
+    private val jellyfin: Jellyfin,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
+) : ServerRepository {
     override suspend fun findServer(address: String): ServerLookupResult {
         val candidates = jellyfin.discovery.getAddressCandidates(address.trim())
         if (candidates.isEmpty()) return ServerLookupResult.Failed(ServerLookupFailure.INVALID_ADDRESS)
-        val results = jellyfin.discovery.getRecommendedServers(candidates)
-        return pickServer(results.toList())
+        val results = withContext(ioDispatcher) { jellyfin.discovery.getRecommendedServers(candidates).toList() }
+        return pickServer(results)
     }
 
     override suspend fun getPublicUsers(serverAddress: String): List<PublicUser> {
         val users = try {
-            jellyfin.createApi(baseUrl = serverAddress).userApi.getPublicUsers().content
+            withContext(ioDispatcher) { jellyfin.createApi(baseUrl = serverAddress).userApi.getPublicUsers().content }
         } catch (_: ApiClientException) {
             // The picker is a shortcut; without it the user types their name.
             return emptyList()
@@ -28,6 +36,15 @@ internal class JellyfinServerRepository @Inject constructor(private val jellyfin
         return users.mapNotNull { user ->
             user.name?.takeIf { it.isNotBlank() }?.let { name -> PublicUser(id = user.id.toString(), name = name) }
         }
+    }
+
+    override suspend fun isQuickConnectEnabled(serverAddress: String): Boolean = try {
+        withContext(ioDispatcher) {
+            jellyfin.createApi(baseUrl = serverAddress).authenticationApi.getQuickConnectEnabled().content
+        }
+    } catch (_: ApiClientException) {
+        // Quick Connect is an alternative; without it the user signs in with their password.
+        false
     }
 }
 

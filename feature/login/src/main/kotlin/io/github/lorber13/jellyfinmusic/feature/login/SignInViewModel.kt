@@ -44,12 +44,19 @@ internal class SignInViewModel @AssistedInject constructor(
     var publicUsers: List<PublicUser> by mutableStateOf(emptyList())
         private set
 
+    /** Whether the server allows Quick Connect, so the screen offers it. */
+    var isQuickConnectAvailable by mutableStateOf(false)
+        private set
+
     var uiState: SignInUiState by mutableStateOf(SignInUiState.Editing())
         private set
 
     init {
         viewModelScope.launch {
             publicUsers = serverRepository.getPublicUsers(server.address)
+        }
+        viewModelScope.launch {
+            isQuickConnectAvailable = serverRepository.isQuickConnectEnabled(server.address)
         }
     }
 

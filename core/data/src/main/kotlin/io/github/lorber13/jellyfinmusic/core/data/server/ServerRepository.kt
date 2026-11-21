@@ -13,4 +13,7 @@ interface ServerRepository {
      * all, which many do, or when it can't be reached.
      */
     suspend fun getPublicUsers(serverAddress: String): List<PublicUser>
+
+    /** Whether [serverAddress] allows signing in with Quick Connect. False when it can't be reached. */
+    suspend fun isQuickConnectEnabled(serverAddress: String): Boolean
 }
