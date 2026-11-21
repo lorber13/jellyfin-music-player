@@ -42,5 +42,7 @@ CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs formatting, lin
 | `app`               | Application, single activity, app shell and navigation |
 | `core/designsystem` | Theme and shared UI components                         |
 | `core/data`         | Data layer (repositories)                              |
+| `core/playback`     | Playback service and the API screens use to play music |
 | `feature/albums`    | Albums list and album detail screens                   |
+| `feature/login`     | Server address and sign-in screens                     |
 | `build-logic`       | Gradle convention plugins shared by the modules        |

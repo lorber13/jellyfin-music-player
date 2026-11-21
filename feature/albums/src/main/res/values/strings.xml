@@ -37,6 +37,10 @@
     </plurals>
     <!-- Heading above the tracks of one disc on the album screen of an album with several discs (CDs). -->
     <string name="feature_albums_detail_disc">Disc <xliff:g id="disc_number" example="2">%1$d</xliff:g></string>
+    <!-- Button under the line with the year and song count on the album screen. Plays the album from its first song. -->
+    <string name="feature_albums_detail_play">Play</string>
+    <!-- Read by screen readers for tapping a song on the album screen, after "Double-tap to". Plays the album starting with that song. -->
+    <string name="feature_albums_detail_play_track">Play</string>
     <!-- Shown when the server answered with an error while loading an album's tracks. -->
     <string name="feature_albums_detail_error_server">The server couldn\'t load this album. Try again later.</string>
 </resources>

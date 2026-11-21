@@ -13,6 +13,9 @@ import io.github.lorber13.jellyfinmusic.core.data.library.AlbumDetail
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumDetailResult
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumRepository
 import io.github.lorber13.jellyfinmusic.core.data.library.LibraryFailure
+import io.github.lorber13.jellyfinmusic.core.data.library.Track
+import io.github.lorber13.jellyfinmusic.core.playback.MusicPlayer
+import io.github.lorber13.jellyfinmusic.core.playback.QueueItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -24,11 +27,12 @@ internal sealed interface AlbumDetailUiState {
     data class Failed(val reason: LibraryFailure) : AlbumDetailUiState
 }
 
-/** Loads one album and its tracks. The album's id comes from the navigation route. */
+/** Loads one album and its tracks, and plays them. The album's id comes from the navigation route. */
 @HiltViewModel(assistedFactory = AlbumDetailViewModel.Factory::class)
 internal class AlbumDetailViewModel @AssistedInject constructor(
     @Assisted private val albumId: String,
-    private val albumRepository: AlbumRepository
+    private val albumRepository: AlbumRepository,
+    private val musicPlayer: MusicPlayer
 ) : ViewModel() {
     var uiState: AlbumDetailUiState by mutableStateOf(AlbumDetailUiState.Loading)
         private set
@@ -51,8 +55,24 @@ internal class AlbumDetailViewModel @AssistedInject constructor(
         }
     }
 
+    /** Plays the whole album, starting with the track at [startIndex] of its track list. */
+    fun play(startIndex: Int) {
+        val album = (uiState as? AlbumDetailUiState.Loaded)?.album ?: return
+        if (startIndex !in album.tracks.indices) return
+        musicPlayer.play(album.tracks.map { track -> queueItemOf(track, album) }, startIndex)
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(albumId: String): AlbumDetailViewModel
     }
 }
+
+/** What the media notification shows for a track of [album]. Tracks without artists show the album's. */
+internal fun queueItemOf(track: Track, album: AlbumDetail): QueueItem = QueueItem(
+    trackId = track.id,
+    title = track.name,
+    artistNames = track.artistNames.ifEmpty { listOfNotNull(album.artistName) },
+    albumName = album.name,
+    artworkUrl = album.coverImageUrl
+)

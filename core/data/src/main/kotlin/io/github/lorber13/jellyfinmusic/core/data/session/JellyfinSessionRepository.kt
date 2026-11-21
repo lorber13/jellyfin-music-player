@@ -38,7 +38,11 @@ internal class JellyfinSessionRepository @Inject constructor(
     private val currentSession = MutableStateFlow<SessionState>(SessionState.Loading)
     override val session: StateFlow<SessionState> = currentSession.asStateFlow()
 
-    /** The client with the signed-in user's access token, for the data layer's other repositories. */
+    /**
+     * The client with the signed-in user's access token, for the data layer's other repositories.
+     * Volatile because the player reads it on its loading threads.
+     */
+    @Volatile
     var signedInClient: ApiClient? = null
         private set
 

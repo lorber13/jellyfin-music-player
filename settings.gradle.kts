@@ -20,6 +20,7 @@ rootProject.name = "jellyfin-music-player"
 include(":app")
 include(":core:designsystem")
 include(":core:data")
+include(":core:playback")
 include(":feature:albums")
 include(":feature:login")
 include(":lint-rules")

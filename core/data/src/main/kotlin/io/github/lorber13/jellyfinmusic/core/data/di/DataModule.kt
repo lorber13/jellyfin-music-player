@@ -8,6 +8,8 @@ import io.github.lorber13.jellyfinmusic.core.data.server.JellyfinServerRepositor
 import io.github.lorber13.jellyfinmusic.core.data.server.ServerRepository
 import io.github.lorber13.jellyfinmusic.core.data.session.JellyfinSessionRepository
 import io.github.lorber13.jellyfinmusic.core.data.session.SessionRepository
+import io.github.lorber13.jellyfinmusic.core.data.stream.JellyfinStreamRepository
+import io.github.lorber13.jellyfinmusic.core.data.stream.StreamRepository
 
 /** Hilt bindings for the data layer's repositories. */
 @Module
@@ -18,4 +20,7 @@ internal abstract class DataModule {
 
     @Binds
     abstract fun bindSessionRepository(repository: JellyfinSessionRepository): SessionRepository
+
+    @Binds
+    abstract fun bindStreamRepository(repository: JellyfinStreamRepository): StreamRepository
 }

@@ -28,6 +28,7 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:data"))
+    implementation(project(":core:playback"))
     implementation(project(":feature:albums"))
     implementation(project(":feature:login"))
 

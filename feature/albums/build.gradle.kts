@@ -16,6 +16,7 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:data"))
+    implementation(project(":core:playback"))
 
     implementation(libs.navigation3.runtime)
     implementation(libs.kotlinx.serialization.core)

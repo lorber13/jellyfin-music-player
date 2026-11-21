@@ -7,20 +7,25 @@ import android.icu.util.MeasureUnit
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -64,13 +70,19 @@ internal fun AlbumDetailScreen(albumId: String, onNavigateBack: () -> Unit) {
     val viewModel = hiltViewModel<AlbumDetailViewModel, AlbumDetailViewModel.Factory>(
         creationCallback = { factory -> factory.create(albumId) }
     )
-    AlbumDetailContent(uiState = viewModel.uiState, onRetry = viewModel::retry, onNavigateBack = onNavigateBack)
+    AlbumDetailContent(
+        uiState = viewModel.uiState,
+        onPlay = viewModel::play,
+        onRetry = viewModel::retry,
+        onNavigateBack = onNavigateBack
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AlbumDetailContent(
     uiState: AlbumDetailUiState,
+    onPlay: (startIndex: Int) -> Unit,
     onRetry: () -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -111,6 +123,7 @@ internal fun AlbumDetailContent(
             is AlbumDetailUiState.Loaded -> AlbumTracks(
                 album = uiState.album,
                 listState = listState,
+                onPlay = onPlay,
                 modifier = contentModifier
             )
         }
@@ -118,31 +131,42 @@ internal fun AlbumDetailContent(
 }
 
 @Composable
-private fun AlbumTracks(album: AlbumDetail, listState: LazyListState, modifier: Modifier = Modifier) {
+private fun AlbumTracks(
+    album: AlbumDetail,
+    listState: LazyListState,
+    onPlay: (startIndex: Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val locale = LocalConfiguration.current.locales[0]
     // Tracks without a disc number are grouped together; disc headings only help when there are several discs.
-    val tracksByDisc = album.tracks.groupBy { track -> track.discNumber }
+    // Each track keeps its index in the album's track list, which is its place in the queue.
+    val tracksByDisc = album.tracks.withIndex().groupBy { (_, track) -> track.discNumber }
     val showsDiscHeadings = tracksByDisc.size > 1
 
     LazyColumn(modifier = modifier, state = listState, contentPadding = PaddingValues(bottom = 16.dp)) {
         item(key = HEADER_ITEM_KEY) {
-            AlbumHeader(album = album, locale = locale)
+            AlbumHeader(album = album, locale = locale, onPlay = { onPlay(0) })
         }
-        tracksByDisc.forEach { (discNumber, tracks) ->
+        tracksByDisc.forEach { (discNumber, indexedTracks) ->
             if (showsDiscHeadings && discNumber != null) {
                 item(key = "disc-$discNumber") {
                     DiscHeading(discNumber)
                 }
             }
-            items(tracks, key = { track -> track.id }) { track ->
-                TrackRow(track = track, albumArtistName = album.artistName, locale = locale)
+            items(indexedTracks, key = { (_, track) -> track.id }) { (index, track) ->
+                TrackRow(
+                    track = track,
+                    albumArtistName = album.artistName,
+                    locale = locale,
+                    onClick = { onPlay(index) }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun AlbumHeader(album: AlbumDetail, locale: Locale) {
+private fun AlbumHeader(album: AlbumDetail, locale: Locale, onPlay: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -174,6 +198,26 @@ private fun AlbumHeader(album: AlbumDetail, locale: Locale) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+        PlayButton(onClick = onPlay, enabled = album.tracks.isNotEmpty(), modifier = Modifier.padding(top = 16.dp))
+    }
+}
+
+@Composable
+private fun PlayButton(onClick: () -> Unit, enabled: Boolean, modifier: Modifier = Modifier) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        contentPadding = ButtonDefaults.ButtonWithIconContentPadding
+    ) {
+        // The button's text already describes it to screen readers.
+        Icon(
+            painter = painterResource(R.drawable.feature_albums_ic_play),
+            contentDescription = null,
+            modifier = Modifier.size(ButtonDefaults.IconSize)
+        )
+        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+        Text(stringResource(R.string.feature_albums_detail_play))
     }
 }
 
@@ -204,10 +248,14 @@ private fun DiscHeading(discNumber: Int) {
 }
 
 @Composable
-private fun TrackRow(track: Track, albumArtistName: String?, locale: Locale) {
+private fun TrackRow(track: Track, albumArtistName: String?, locale: Locale, onClick: () -> Unit) {
     // Compilations and guest appearances name the track's own artists; otherwise they repeat the header.
     val showsArtists = track.artistNames.isNotEmpty() && track.artistNames != listOfNotNull(albumArtistName)
     ListItem(
+        modifier = Modifier.clickable(
+            onClickLabel = stringResource(R.string.feature_albums_detail_play_track),
+            onClick = onClick
+        ),
         headlineContent = { Text(text = track.name, maxLines = 2, overflow = TextOverflow.Ellipsis) },
         supportingContent = if (showsArtists) {
             {
@@ -303,6 +351,6 @@ private fun AlbumDetailContentPreview() {
         )
     )
     JellyfinMusicTheme {
-        AlbumDetailContent(uiState = AlbumDetailUiState.Loaded(album), onRetry = {}, onNavigateBack = {})
+        AlbumDetailContent(uiState = AlbumDetailUiState.Loaded(album), onPlay = {}, onRetry = {}, onNavigateBack = {})
     }
 }

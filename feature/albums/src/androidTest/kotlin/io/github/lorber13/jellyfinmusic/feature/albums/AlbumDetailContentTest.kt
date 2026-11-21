@@ -2,10 +2,13 @@ package io.github.lorber13.jellyfinmusic.feature.albums
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumDetail
 import io.github.lorber13.jellyfinmusic.core.data.library.LibraryFailure
@@ -89,6 +92,37 @@ class AlbumDetailContentTest {
     }
 
     @Test
+    fun playButton_playsFromTheFirstTrack() {
+        val startIndices = mutableListOf<Int>()
+        showContent(uiState = AlbumDetailUiState.Loaded(album), onPlay = { startIndices += it })
+
+        composeRule.onNode(hasText(string(R.string.feature_albums_detail_play)) and hasClickAction()).performClick()
+
+        assertEquals(listOf(0), startIndices)
+    }
+
+    @Test
+    fun tappingATrack_playsFromThatTrack() {
+        val startIndices = mutableListOf<Int>()
+        showContent(uiState = AlbumDetailUiState.Loaded(album), onPlay = { startIndices += it })
+
+        // Cold Iron is the third track; the disc headings above it don't count.
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText("Cold Iron"))
+        composeRule.onNode(hasText("Cold Iron")).performClick()
+
+        assertEquals(listOf(2), startIndices)
+    }
+
+    @Test
+    fun albumWithoutTracks_cannotBePlayed() {
+        showContent(album.copy(tracks = emptyList()))
+
+        composeRule.onNode(
+            hasText(string(R.string.feature_albums_detail_play)) and hasClickAction()
+        ).assertIsNotEnabled()
+    }
+
+    @Test
     fun failedLoad_showsTheErrorAndTriesAgain() {
         var retries = 0
         showContent(uiState = AlbumDetailUiState.Failed(LibraryFailure.SERVER_ERROR), onRetry = { retries++ })
@@ -126,10 +160,10 @@ class AlbumDetailContentTest {
 
     private fun showContent(album: AlbumDetail) = showContent(uiState = AlbumDetailUiState.Loaded(album))
 
-    private fun showContent(uiState: AlbumDetailUiState, onRetry: () -> Unit = {}) {
+    private fun showContent(uiState: AlbumDetailUiState, onPlay: (Int) -> Unit = {}, onRetry: () -> Unit = {}) {
         composeRule.setContent {
             JellyfinMusicTheme {
-                AlbumDetailContent(uiState = uiState, onRetry = onRetry, onNavigateBack = {})
+                AlbumDetailContent(uiState = uiState, onPlay = onPlay, onRetry = onRetry, onNavigateBack = {})
             }
         }
     }
