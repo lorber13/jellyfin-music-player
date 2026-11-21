@@ -12,6 +12,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import io.github.lorber13.jellyfinmusic.core.data.session.SessionState
 import io.github.lorber13.jellyfinmusic.feature.login.QuickConnectRoute
 import io.github.lorber13.jellyfinmusic.feature.login.ServerAddressRoute
 import io.github.lorber13.jellyfinmusic.feature.login.SignInRoute
@@ -26,14 +27,24 @@ import io.github.lorber13.jellyfinmusic.navigation.AppShellRoute
 @Composable
 fun JellyfinMusicRoot(viewModel: RootViewModel = hiltViewModel()) {
     val session by viewModel.session.collectAsStateWithLifecycle()
-    // Only used when there is no saved back stack, e.g. when the user reopens the app after
-    // leaving it with Back while the session is still in memory.
-    val backStack = rememberNavBackStack(if (session != null) AppShellRoute else ServerAddressRoute)
+    // MainActivity keeps the splash screen up while the stored session is read, so nothing is
+    // drawn until the app knows whether to open on sign-in or on the tabs.
+    if (session != SessionState.Loading) {
+        RootNavDisplay(isSignedIn = session is SessionState.SignedIn)
+    }
+}
 
-    // The back stack survives process death, but until ACC-04 the session doesn't: the app could
-    // come back on the shell with nobody signed in.
-    LaunchedEffect(session) {
-        if (session == null && AppShellRoute in backStack) {
+@Composable
+private fun RootNavDisplay(isSignedIn: Boolean) {
+    // Only used when there is no saved back stack: on a cold start, or when the user reopens the
+    // app after leaving it with Back.
+    val backStack = rememberNavBackStack(if (isSignedIn) AppShellRoute else ServerAddressRoute)
+
+    // The back stack survives process death even when the stored session couldn't be read back
+    // (for example after the Keystore key was lost): the app would come back on the shell with
+    // nobody signed in.
+    LaunchedEffect(isSignedIn) {
+        if (!isSignedIn && AppShellRoute in backStack) {
             backStack.replaceAllWith(ServerAddressRoute)
         }
     }
@@ -57,7 +68,7 @@ fun JellyfinMusicRoot(viewModel: RootViewModel = hiltViewModel()) {
             entry<AppShellRoute> {
                 // The shell never runs without a signed-in user. Without a session the entry stays
                 // empty for the moment it takes the effect above to go back to the sign-in screens.
-                if (session != null) JellyfinMusicApp()
+                if (isSignedIn) JellyfinMusicApp()
             }
         }
     )

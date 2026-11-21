@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Only styles the window before Compose draws (including the splash screen);
-         the real theme is JellyfinMusicTheme. The dark version is in values-night. -->
+    <!-- Only styles the window before Compose draws; the real theme is JellyfinMusicTheme.
+         The dark version is in values-night. -->
     <style name="Theme.JellyfinMusic" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/window_background</item>
+    </style>
+
+    <!-- The launch theme. The splash screen stays up until the stored session is read, then
+         MainActivity switches to Theme.JellyfinMusic. It shows the launcher icon, as Android 12+
+         does by default, on every version from Android 10. -->
+    <style name="Theme.JellyfinMusic.Starting" parent="Theme.SplashScreen.IconBackground">
+        <item name="windowSplashScreenBackground">@color/window_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/ic_launcher_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.JellyfinMusic</item>
     </style>
 </resources>

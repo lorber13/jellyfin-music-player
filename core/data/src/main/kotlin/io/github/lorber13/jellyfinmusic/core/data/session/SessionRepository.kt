@@ -5,10 +5,10 @@ import kotlinx.coroutines.flow.StateFlow
 
 /** Signs the user in and holds the signed-in session. */
 interface SessionRepository {
-    /** The current session, or null while nobody is signed in. */
-    val session: StateFlow<UserSession?>
+    /** Whether someone is signed in. Starts as [SessionState.Loading] while the stored session is read. */
+    val session: StateFlow<SessionState>
 
-    /** Signs in to [server]. On success, [session] holds the new session. */
+    /** Signs in to [server]. On success, [session] holds the new session, and it is stored for the next start. */
     suspend fun signIn(server: JellyfinServer, username: String, password: String): SignInResult
 
     /** Asks [server] for a Quick Connect code that the user approves in another Jellyfin client. */
@@ -17,6 +17,6 @@ interface SessionRepository {
     /** Asks [server] whether [request] was approved yet. */
     suspend fun checkQuickConnect(server: JellyfinServer, request: QuickConnectRequest): QuickConnectStatus
 
-    /** Signs in to [server] with an approved [request]. On success, [session] holds the new session. */
+    /** Signs in to [server] with an approved [request]. On success, [session] holds the new session, and it is stored. */
     suspend fun signInWithQuickConnect(server: JellyfinServer, request: QuickConnectRequest): SignInResult
 }

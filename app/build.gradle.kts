@@ -31,6 +31,7 @@ dependencies {
     implementation(project(":feature:login"))
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.material3.adaptive.navigation.suite)
     implementation(libs.navigation3.runtime)

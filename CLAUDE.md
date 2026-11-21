@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-An Android music player for Jellyfin with offline playback and Android Auto support. The project skeleton (TECH-01) is in place: the app builds and shows an empty shell with four tabs. CI (TECH-02, `.github/workflows/ci.yml`) runs the done-checks below on every push to `main` and on every PR. A local Jellyfin test server with a generated music library (TECH-03) lives in `dev/test-server/`. The app opens on the server address screen (ACC-01), then signs in with username and password (ACC-02) or Quick Connect (ACC-03) and shows the tabs. The session is kept in memory by `SessionRepository` in `:core:data`, so a restart signs the user out until ACC-04. Features are implemented in the order of `docs/BACKLOG.md`.
+An Android music player for Jellyfin with offline playback and Android Auto support. The project skeleton (TECH-01) is in place: the app builds and shows an empty shell with four tabs. CI (TECH-02, `.github/workflows/ci.yml`) runs the done-checks below on every push to `main` and on every PR. A local Jellyfin test server with a generated music library (TECH-03) lives in `dev/test-server/`. The app opens on the server address screen (ACC-01), then signs in with username and password (ACC-02) or Quick Connect (ACC-03) and shows the tabs. `SessionRepository` in `:core:data` stores the session (ACC-04) in a DataStore file encrypted with Tink and an Android Keystore key (`SessionStoreModule`), and restores it at startup without asking the server, so the app also opens offline; the splash screen stays up until it is read. Features are implemented in the order of `docs/BACKLOG.md`.
 
 ## Commands
 

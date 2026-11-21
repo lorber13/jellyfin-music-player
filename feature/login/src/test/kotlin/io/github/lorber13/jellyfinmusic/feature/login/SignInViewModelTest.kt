@@ -8,6 +8,7 @@ import io.github.lorber13.jellyfinmusic.core.data.server.ServerRepository
 import io.github.lorber13.jellyfinmusic.core.data.session.QuickConnectRequest
 import io.github.lorber13.jellyfinmusic.core.data.session.QuickConnectStartResult
 import io.github.lorber13.jellyfinmusic.core.data.session.SessionRepository
+import io.github.lorber13.jellyfinmusic.core.data.session.SessionState
 import io.github.lorber13.jellyfinmusic.core.data.session.SignInFailure
 import io.github.lorber13.jellyfinmusic.core.data.session.SignInResult
 import io.github.lorber13.jellyfinmusic.core.data.session.UserSession
@@ -186,7 +187,7 @@ class SignInViewModelTest {
     private class FakeSessionRepository : SessionRepository {
         var result: SignInResult = SignInResult.Failed(SignInFailure.UNREACHABLE)
         val attempts = mutableListOf<Attempt>()
-        override val session: StateFlow<UserSession?> = MutableStateFlow(null)
+        override val session: StateFlow<SessionState> = MutableStateFlow(SessionState.SignedOut)
 
         override suspend fun signIn(server: JellyfinServer, username: String, password: String): SignInResult {
             attempts += Attempt(server, username, password)

@@ -6,6 +6,7 @@ import io.github.lorber13.jellyfinmusic.core.data.session.QuickConnectRequest
 import io.github.lorber13.jellyfinmusic.core.data.session.QuickConnectStartResult
 import io.github.lorber13.jellyfinmusic.core.data.session.QuickConnectStatus
 import io.github.lorber13.jellyfinmusic.core.data.session.SessionRepository
+import io.github.lorber13.jellyfinmusic.core.data.session.SessionState
 import io.github.lorber13.jellyfinmusic.core.data.session.SignInFailure
 import io.github.lorber13.jellyfinmusic.core.data.session.SignInResult
 import io.github.lorber13.jellyfinmusic.core.data.session.UserSession
@@ -221,7 +222,7 @@ class QuickConnectViewModelTest {
         var signInResult: SignInResult = SignInResult.Success(signedInSession)
         val signedInRequests = mutableListOf<QuickConnectRequest>()
 
-        override val session: StateFlow<UserSession?> = MutableStateFlow(null)
+        override val session: StateFlow<SessionState> = MutableStateFlow(SessionState.SignedOut)
 
         override suspend fun signIn(server: JellyfinServer, username: String, password: String): SignInResult =
             error("The Quick Connect screen doesn't sign in with a password")

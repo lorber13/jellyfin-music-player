@@ -1,13 +1,16 @@
 package io.github.lorber13.jellyfinmusic.core.data.session
 
+import io.github.lorber13.jellyfinmusic.core.data.di.ApplicationScope
 import io.github.lorber13.jellyfinmusic.core.data.di.IoDispatcher
 import io.github.lorber13.jellyfinmusic.core.data.server.JellyfinServer
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.sdk.Jellyfin
 import org.jellyfin.sdk.api.client.ApiClient
@@ -20,20 +23,39 @@ import org.jellyfin.sdk.model.api.AuthenticationResult
 import org.jellyfin.sdk.model.api.QuickConnectDto
 
 /**
- * Keeps the session in memory only: staying signed in across restarts is ACC-04. The SDK reads
- * responses on the calling thread, so every call runs on the IO dispatcher.
+ * Signs in and keeps the session in [sessionStore], so the user stays signed in across restarts.
+ * A restored session is trusted without asking the server, so the app also starts offline; the
+ * server rejecting it later is ACC-06. The SDK reads responses on the calling thread, so every
+ * call runs on the IO dispatcher.
  */
 @Singleton
 internal class JellyfinSessionRepository @Inject constructor(
     private val jellyfin: Jellyfin,
-    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    private val sessionStore: SessionStore,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @ApplicationScope applicationScope: CoroutineScope
 ) : SessionRepository {
-    private val currentSession = MutableStateFlow<UserSession?>(null)
-    override val session: StateFlow<UserSession?> = currentSession.asStateFlow()
+    private val currentSession = MutableStateFlow<SessionState>(SessionState.Loading)
+    override val session: StateFlow<SessionState> = currentSession.asStateFlow()
 
     /** The client with the signed-in user's access token, for the data layer's other repositories. */
     var signedInClient: ApiClient? = null
         private set
+
+    init {
+        applicationScope.launch { restoreSession() }
+    }
+
+    private suspend fun restoreSession() {
+        val storedSession = sessionStore.read()
+        if (storedSession == null) {
+            currentSession.value = SessionState.SignedOut
+            return
+        }
+        signedInClient =
+            jellyfin.createApi(baseUrl = storedSession.serverAddress, accessToken = storedSession.accessToken)
+        currentSession.value = SessionState.SignedIn(storedSession.userSession)
+    }
 
     override suspend fun signIn(server: JellyfinServer, username: String, password: String): SignInResult {
         val client = jellyfin.createApi(baseUrl = server.address)
@@ -84,8 +106,8 @@ internal class JellyfinSessionRepository @Inject constructor(
         return startSession(client, server, result, fallbackUserName = null)
     }
 
-    /** Makes the user [result] signed in the current session, whichever way they signed in. */
-    private fun startSession(
+    /** Makes the user [result] signed in and stores the session, whichever way they signed in. */
+    private suspend fun startSession(
         client: ApiClient,
         server: JellyfinServer,
         result: AuthenticationResult,
@@ -98,16 +120,19 @@ internal class JellyfinSessionRepository @Inject constructor(
             return SignInResult.Failed(SignInFailure.SERVER_ERROR)
         }
 
-        client.update(accessToken = accessToken)
-        signedInClient = client
-        val newSession = UserSession(
+        val storedSession = StoredSession(
             serverAddress = server.address,
             serverName = server.name,
             userId = user.id.toString(),
-            userName = userName
+            userName = userName,
+            accessToken = accessToken
         )
-        currentSession.value = newSession
-        return SignInResult.Success(newSession)
+        // Stored before the session is published, so the app can't be closed signed in but not remembered.
+        sessionStore.save(storedSession)
+        client.update(accessToken = accessToken)
+        signedInClient = client
+        currentSession.value = SessionState.SignedIn(storedSession.userSession)
+        return SignInResult.Success(storedSession.userSession)
     }
 }
 
