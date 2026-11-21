@@ -18,9 +18,22 @@ android {
 
     buildTypes {
         debug {
+            // Installs next to the release build, which is the one used every day. Instrumented
+            // tests reinstall the debug build and so never touch the release build's data.
+            applicationIdSuffix = ".debug"
             // Adds the en-XA (accented, longer text) and ar-XB (right-to-left) test languages,
             // to spot untranslated text, truncation and layout mirroring problems.
             isPseudoLocalesEnabled = true
+        }
+        release {
+            optimization {
+                // R8 shrinks, optimizes and obfuscates the code and removes unused resources.
+                // Extra keep rules go in src/main/keepRules.
+                enable = true
+            }
+            // Signed with the local debug key until TECH-05 adds the release key, so the release
+            // build can be installed on a phone and used every day.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }

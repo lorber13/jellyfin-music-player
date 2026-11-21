@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher name of the debug build, to tell it apart from the release build installed next to it. -->
+    <string name="app_name" translatable="false">JMP Debug</string>
+</resources>

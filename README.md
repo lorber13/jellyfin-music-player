@@ -18,7 +18,10 @@ The app is in early development. Today it is an empty shell with navigation; see
 ```bash
 ./gradlew assembleDebug          # build the debug APK
 ./gradlew installDebug           # install it on a connected device
+./gradlew installRelease         # install the optimized release build
 ```
+
+The debug build (`io.github.lorber13.jellyfinmusic.debug`, "JMP Debug" in the launcher) installs next to the release build, so a release build used every day keeps its data while UI tests reinstall the debug one. Until release signing is set up, the release build is signed with the local debug key.
 
 ## Checks
 
