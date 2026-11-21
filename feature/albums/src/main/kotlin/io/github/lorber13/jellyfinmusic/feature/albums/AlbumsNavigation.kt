@@ -15,7 +15,7 @@ fun EntryProviderScope<NavKey>.albumsEntries(onAlbumClick: (albumId: String) -> 
     entry<AlbumsRoute> {
         AlbumsScreen(onAlbumClick = onAlbumClick)
     }
-    entry<AlbumDetailRoute> { route ->
-        AlbumDetailScreen(albumId = route.albumId, onNavigateBack = onNavigateBack)
+    entry<AlbumDetailRoute> {
+        AlbumDetailScreen(onNavigateBack = onNavigateBack)
     }
 }

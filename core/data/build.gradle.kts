@@ -15,6 +15,7 @@ dependencies {
     runtimeOnly(libs.slf4j.android)
 
     implementation(libs.androidx.datastore)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore.tink) {
         // Same classes as tink-android, but without the Android Keystore integration.
         exclude(group = "com.google.crypto.tink", module = "tink")

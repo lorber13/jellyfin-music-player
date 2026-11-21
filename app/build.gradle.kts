@@ -12,7 +12,8 @@ android {
         applicationId = "io.github.lorber13.jellyfinmusic"
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Runs the instrumented tests with Hilt's test application, so tests can replace bindings.
+        testInstrumentationRunner = "io.github.lorber13.jellyfinmusic.HiltTestRunner"
     }
 
     buildTypes {
@@ -39,6 +40,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.serialization.core)
+    // Lets Coil load album covers from the server over the same HTTP client as the Jellyfin SDK.
+    runtimeOnly(libs.coil.network.okhttp)
 
     testImplementation(libs.junit)
 
@@ -47,5 +50,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.runner)
     // Compose UI tests bring in an older Espresso that crashes on Android 16 and newer.
     androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.compose.ui.test.manifest)
 }

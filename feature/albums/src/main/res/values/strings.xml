@@ -1,7 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources>
     <!-- Title of the screen that lists all albums. -->
     <string name="feature_albums_title">Albums</string>
-    <!-- Name of a placeholder album, shown until real albums are loaded from the server. -->
-    <string name="feature_albums_sample_album">Sample album <xliff:g id="album_number" example="7">%1$s</xliff:g></string>
+    <!-- Read by screen readers for the button in the albums screen's title bar that opens the sort options. -->
+    <string name="feature_albums_sort">Sort albums</string>
+    <!-- Sort option in the albums screen's sort menu: alphabetical by album name. -->
+    <string name="feature_albums_sort_name">Name</string>
+    <!-- Sort option in the albums screen's sort menu: by release year. -->
+    <string name="feature_albums_sort_year">Year</string>
+    <!-- Sort option in the albums screen's sort menu: by when the album was added to the server. -->
+    <string name="feature_albums_sort_date_added">Date added</string>
+    <!-- Read by screen readers for the arrow next to the selected sort option, when sorting by name alphabetically. -->
+    <string name="feature_albums_sort_a_to_z">A to Z</string>
+    <!-- Read by screen readers for the arrow next to the selected sort option, when sorting by name in reverse alphabetical order. -->
+    <string name="feature_albums_sort_z_to_a">Z to A</string>
+    <!-- Read by screen readers for the arrow next to the selected sort option, when sorting by year or date added, oldest first. -->
+    <string name="feature_albums_sort_oldest_first">Oldest first</string>
+    <!-- Read by screen readers for the arrow next to the selected sort option, when sorting by year or date added, newest first. -->
+    <string name="feature_albums_sort_newest_first">Newest first</string>
+    <!-- Shown in the middle of the albums screen when the server has no albums the user can see. -->
+    <string name="feature_albums_empty">No albums found on your server.</string>
+    <!-- Shown when the albums can't be loaded because the server didn't answer. -->
+    <string name="feature_albums_error_unreachable">Can\'t reach the server. Check your connection and try again.</string>
+    <!-- Shown when the server answered with an error while loading the albums. -->
+    <string name="feature_albums_error_server">The server couldn\'t load the albums. Try again later.</string>
+    <!-- Button under an error message that loads the albums again. -->
+    <string name="feature_albums_retry">Try again</string>
+    <!-- Title of the screen of a single album, until it shows the album's name. -->
+    <string name="feature_albums_album_title">Album</string>
 </resources>
