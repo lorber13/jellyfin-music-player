@@ -8,5 +8,6 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
         val android = target.extensions.getByType(LibraryExtension::class.java)
         configureAndroidCommon(android)
+        target.addProjectLintChecks()
     }
 }

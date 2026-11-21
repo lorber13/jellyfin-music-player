@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Shown in the middle of a screen that is not implemented yet. -->
     <string name="designsystem_placeholder_message">This screen is not available yet.</string>
+    <!-- Read by screen readers for the back arrow in a screen's title bar. -->
     <string name="designsystem_navigate_back">Navigate back</string>
 </resources>

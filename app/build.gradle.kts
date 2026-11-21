@@ -14,6 +14,14 @@ android {
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    buildTypes {
+        debug {
+            // Adds the en-XA (accented, longer text) and ar-XB (right-to-left) test languages,
+            // to spot untranslated text, truncation and layout mirroring problems.
+            isPseudoLocalesEnabled = true
+        }
+    }
 }
 
 dependencies {

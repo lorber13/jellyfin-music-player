@@ -8,6 +8,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
         val android = target.extensions.getByType(ApplicationExtension::class.java)
         configureAndroidCommon(android)
+        target.addProjectLintChecks()
         android.defaultConfig.targetSdk = AndroidSdkLevels.TARGET
     }
 }

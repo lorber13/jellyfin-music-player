@@ -30,6 +30,11 @@ internal fun configureAndroidCommon(extension: CommonExtension) {
     extension.lint.disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
 }
 
+/** Runs the project's own Lint checks from :lint-rules, such as HardcodedComposeText, on this module. */
+internal fun Project.addProjectLintChecks() {
+    dependencies.add("lintChecks", dependencies.project(":lint-rules"))
+}
+
 /** Looks up a library from gradle/libs.versions.toml by its alias, e.g. "hilt-android". */
 internal fun Project.catalogLibrary(alias: String): Provider<MinimalExternalModuleDependency> =
     extensions.getByType(VersionCatalogsExtension::class.java).named("libs").findLibrary(alias).get()

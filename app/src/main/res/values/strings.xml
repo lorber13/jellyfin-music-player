@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Name shown under the launcher icon and in system settings. -->
     <string name="app_name">Jellyfin Music Player</string>
+
+    <!-- Labels of the main navigation tabs. Keep them short: they sit under an icon in a bar
+         shared by four tabs. -->
     <string name="destination_home">Home</string>
     <string name="destination_library">Library</string>
     <string name="destination_search">Search</string>

@@ -160,6 +160,8 @@ private fun DarkPalettePreview() {
     JellyfinMusicTheme(darkTheme = true, dynamicColor = false) { PaletteSwatches() }
 }
 
+// Only used by the previews above: the labels are color role names for developers.
+@Suppress("HardcodedComposeText")
 @Composable
 private fun PaletteSwatches() {
     val colors = MaterialTheme.colorScheme

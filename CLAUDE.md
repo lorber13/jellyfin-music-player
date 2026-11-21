@@ -12,7 +12,8 @@ An Android music player for Jellyfin with offline playback and Android Auto supp
 ./gradlew assembleDebug                 # build the debug APK
 ./gradlew spotlessApply                 # format Kotlin and Gradle files (ktlint)
 ./gradlew spotlessCheck lint            # formatting check + Android Lint (warnings are errors)
-./gradlew testDebugUnitTest             # all JVM unit tests
+./gradlew testDebugUnitTest             # all JVM unit tests of the Android modules
+./gradlew :lint-rules:test              # tests of the project's own Lint checks
 ./gradlew :app:testDebugUnitTest --tests '*.NavigatorTest'                        # one test class
 ./gradlew :app:testDebugUnitTest --tests '*.NavigatorTest.goBack_closesTheCurrentScreen'   # one test
 ./gradlew connectedDebugAndroidTest     # UI tests on a connected device (set ANDROID_SERIAL to pick one)
@@ -24,17 +25,22 @@ JELLYFIN_VERSION=10.8.13 dev/test-server/up.sh   # another server version (10.9.
 dev/test-server/down.sh                 # stop it; reset.sh deletes its data (--all also the generated music)
 ```
 
-Run `spotlessCheck lint testDebugUnitTest assembleDebug` before calling a change done.
+Run `spotlessCheck lint testDebugUnitTest :lint-rules:test assembleDebug` before calling a change done.
 
 ## Architecture
 
 Single-activity Jetpack Compose app, application ID and base package `io.github.lorber13.jellyfinmusic`. minSdk 29, compileSdk and targetSdk 37, Java 17 bytecode.
 
-- **Modules**: `:app` (application, `MainActivity`, shell, navigation), `:core:designsystem` (theme, shared composables), `:core:data` (data layer, Hilt bindings), `:feature:albums` (one module per feature area; add more as backlog items need them). Features depend on `core` modules, never on each other or on `:app`.
+- **Modules**: `:app` (application, `MainActivity`, shell, navigation), `:core:designsystem` (theme, shared composables), `:core:data` (data layer, Hilt bindings), `:feature:albums` (one module per feature area; add more as backlog items need them). Features depend on `core` modules, never on each other or on `:app`. `:lint-rules` (plain JVM) holds the project's own Lint checks; the convention plugins add it to every Android module with `lintChecks`.
 - **Build logic**: `build-logic/convention` holds convention plugins (`jellyfinmusic.android.application`, `.android.library`, `.android.compose`, `.hilt`). SDK levels, lint settings and common dependencies live there, not in module build files. All versions are in `gradle/libs.versions.toml`. AGP 9 has built-in Kotlin, so `org.jetbrains.kotlin.android` and kapt are not used; annotation processing is KSP.
 - **Navigation**: Navigation 3. Routes are `@Serializable` `NavKey`s. `TopLevelDestination` lists the tabs; `NavigationState` keeps one back stack per tab and `Navigator` mutates it (`app/.../navigation`). A feature module exposes its routes and an `EntryProviderScope<NavKey>.xxxEntries(...)` function that `JellyfinMusicApp` calls. The shell is a `NavigationSuiteScaffold` (bar on phones, rail on wider windows).
 - **DI**: Hilt. `JellyfinMusicApplication` is the `@HiltAndroidApp`.
 - **Resources**: strings and drawables in library modules are prefixed with the module name (`feature_albums_`, `designsystem_`). Icons are vector drawables; the `material-icons` artifacts are deprecated and not used.
+- **Strings (UI-05)**: every user-facing text, including content descriptions, is a string resource read with `stringResource`; the `HardcodedComposeText` Lint check enforces it in Compose code (`@Preview` functions are exempt; other text users never see needs `@Suppress` with a comment). Also:
+  - Add a `<!-- comment -->` for translators when the context isn't obvious (where it appears, length limits).
+  - Wrap placeholders in `<xliff:g id="…" example="…">` and use positional formats (`%1$s`). Build whole sentences in one string; never concatenate pieces.
+  - Counts use `<plurals>` and `pluralStringResource`. Text that must not be translated gets `translatable="false"`.
+  - Debug builds include the en-XA and ar-XB pseudolocales. To check text expansion and right-to-left layout on a device: `adb shell cmd locale set-app-locales io.github.lorber13.jellyfinmusic --locales en-XA` (`ar-XB`; `--locales ""` resets).
 - **Backups are disabled** (`data_extraction_rules.xml`, `full_backup_content.xml`) because app data will hold server credentials.
 
 ## Working agreement

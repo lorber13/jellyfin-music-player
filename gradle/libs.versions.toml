@@ -1,5 +1,7 @@
 [versions]
 agp = "9.5.1"
+# Lint libraries are versioned as AGP + 23 (AGP 9.5.1 -> lint 32.5.1). Bump them together.
+lint = "32.5.1"
 kotlin = "2.4.21"
 ksp = "2.3.12"
 hilt = "2.60.1"
@@ -19,6 +21,11 @@ androidxTestEspresso = "3.7.0"
 [libraries]
 # Only used by build-logic to compile the convention plugins.
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+
+# Only used by :lint-rules, the project's own Lint checks.
+lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "lint" }
+lint-cli = { module = "com.android.tools.lint:lint", version.ref = "lint" }
+lint-tests = { module = "com.android.tools.lint:lint-tests", version.ref = "lint" }
 
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
@@ -49,6 +56,8 @@ androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core",
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+android-lint = { id = "com.android.lint", version.ref = "agp" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

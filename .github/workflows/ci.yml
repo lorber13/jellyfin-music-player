@@ -30,7 +30,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       # The same checks CLAUDE.md requires before a change is done.
-      - run: ./gradlew spotlessCheck lint testDebugUnitTest assembleDebug
+      - run: ./gradlew spotlessCheck lint testDebugUnitTest :lint-rules:test assembleDebug
 
       - name: Upload reports
         if: failure()
