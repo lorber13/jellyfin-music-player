@@ -31,6 +31,8 @@ internal class ServerAddressViewModel @Inject constructor(private val serverRepo
     var uiState: ServerAddressUiState by mutableStateOf(ServerAddressUiState.Editing())
         private set
 
+    private var hasContinued = false
+
     fun onAddressChange(newAddress: String) {
         address = newAddress
     }
@@ -50,5 +52,22 @@ internal class ServerAddressViewModel @Inject constructor(private val serverRepo
     /** Goes back to editing the address after a server was found. */
     fun changeServer() {
         uiState = ServerAddressUiState.Editing()
+    }
+
+    /** The user moved on to sign in to the found server. */
+    fun continueWithServer() {
+        hasContinued = true
+    }
+
+    /**
+     * Called each time the screen is shown. Coming back from signing in, by Back or "Change
+     * server", means the user wants another server, so the address field is shown again instead
+     * of the found server. The state isn't reset on Continue itself: the screen would visibly
+     * switch to the address field while it fades out.
+     */
+    fun onShown() {
+        if (!hasContinued) return
+        hasContinued = false
+        changeServer()
     }
 }

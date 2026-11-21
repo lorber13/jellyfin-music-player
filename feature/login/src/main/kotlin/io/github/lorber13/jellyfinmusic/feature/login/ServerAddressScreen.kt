@@ -27,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -49,6 +50,9 @@ internal fun ServerAddressScreen(
     viewModel: ServerAddressViewModel = hiltViewModel()
 ) {
     val localNetworkAccess = rememberLocalNetworkAccess(onAnswered = viewModel::connect)
+    // Runs again whenever the user comes back to this screen, since navigation removes it from
+    // the composition while another screen is shown.
+    LaunchedEffect(viewModel) { viewModel.onShown() }
     val uiState = viewModel.uiState
     // Without the permission, a server on the home network looks exactly like one that is down.
     val failure = (uiState as? ServerAddressUiState.Editing)?.failure
@@ -69,7 +73,10 @@ internal fun ServerAddressScreen(
         },
         onAllowLocalNetworkAccess = localNetworkAccess::askAgainOrOpenSettings,
         onChangeServer = viewModel::changeServer,
-        onContinue = onContinue
+        onContinue = { server ->
+            viewModel.continueWithServer()
+            onContinue(server)
+        }
     )
 }
 

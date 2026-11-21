@@ -95,6 +95,34 @@ class ServerAddressViewModelTest {
         assertEquals("localhost", viewModel.address)
     }
 
+    @Test
+    fun comingBackAfterContinue_showsTheAddressFieldWithTheAddress() = runTest(dispatcher) {
+        repository.result = ServerLookupResult.Found(server)
+        viewModel.onAddressChange("localhost")
+        viewModel.connect()
+        runCurrent()
+
+        viewModel.continueWithServer()
+        assertEquals(ServerAddressUiState.Connected(server), viewModel.uiState)
+        viewModel.onShown()
+
+        assertEquals(ServerAddressUiState.Editing(), viewModel.uiState)
+        assertEquals("localhost", viewModel.address)
+    }
+
+    @Test
+    fun shownAgainWithoutContinuing_keepsTheFoundServer() = runTest(dispatcher) {
+        repository.result = ServerLookupResult.Found(server)
+        viewModel.onAddressChange("localhost")
+        viewModel.connect()
+        runCurrent()
+
+        // E.g. after rotating the screen.
+        viewModel.onShown()
+
+        assertEquals(ServerAddressUiState.Connected(server), viewModel.uiState)
+    }
+
     private class FakeServerRepository : ServerRepository {
         var result: ServerLookupResult = ServerLookupResult.Failed(ServerLookupFailure.UNREACHABLE)
         val lookedUpAddresses = mutableListOf<String>()
