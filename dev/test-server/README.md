@@ -15,7 +15,7 @@ dev/test-server/reset.sh       # stop and delete the server data, so the next up
 dev/test-server/reset.sh --all # also delete the generated music and every version's data
 ```
 
-`up.sh` is safe to run again at any time. On the first run it creates the test user, adds the Music library, waits for the scan and creates a playlist. On later runs it skips what already exists and only starts the server and the `adb reverse` forward.
+`up.sh` is safe to run again at any time. On the first run it creates the test user and shows it in the public user list (which the sign-in screen offers to pick from), adds the Music library, waits for the scan and creates a playlist. On later runs it skips what already exists and only starts the server and the `adb reverse` forward.
 
 ## Connecting
 

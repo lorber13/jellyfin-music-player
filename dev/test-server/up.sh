@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Starts the local Jellyfin test server and sets it up on the first run:
-# test user, Music library, full scan and a sample playlist. Safe to run
-# again; every step checks what already exists. See README.md.
+# test user (shown in the public user list), Music library, full scan and a
+# sample playlist. Safe to run again; every step checks what already exists.
+# See README.md.
 set -euo pipefail
 
 # shellcheck source=common.sh
@@ -21,6 +22,7 @@ main() {
         run_startup_wizard
     fi
     log_in
+    show_user_in_public_list
     add_music_library_if_missing
     wait_for_library_scan
     create_sample_playlist_if_missing
@@ -90,6 +92,18 @@ log_in() {
         "$(jq -n --arg name "$TEST_USER" --arg password "$TEST_PASSWORD" '{Username: $name, Pw: $password}')")"
     access_token="$(jq -r .AccessToken <<<"$response")"
     user_id="$(jq -r .User.Id <<<"$response")"
+}
+
+# New users are hidden from the server's public user list by default; the
+# app's sign-in screen offers the users in that list to pick from.
+show_user_in_public_list() {
+    local policy
+    policy="$(api GET "/Users/$user_id" | jq .Policy)"
+    if [[ "$(jq -r .IsHidden <<<"$policy")" != true ]]; then
+        return
+    fi
+    echo "Showing the test user in the public user list"
+    api POST "/Users/$user_id/Policy" "$(jq '.IsHidden = false' <<<"$policy")"
 }
 
 add_music_library_if_missing() {
