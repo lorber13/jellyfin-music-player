@@ -1,6 +1,7 @@
 package io.github.lorber13.jellyfinmusic.feature.albums
 
 import io.github.lorber13.jellyfinmusic.core.data.library.Album
+import io.github.lorber13.jellyfinmusic.core.data.library.AlbumDetailResult
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumRepository
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumSort
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumSortField
@@ -215,6 +216,8 @@ class AlbumsViewModelTest {
             requestedSorts += sort
             return pendingResult?.await() ?: result
         }
+
+        override suspend fun getAlbumDetail(albumId: String): AlbumDetailResult = error("Not used by the albums list")
     }
 
     private class FakeLibraryPreferencesRepository : LibraryPreferencesRepository {

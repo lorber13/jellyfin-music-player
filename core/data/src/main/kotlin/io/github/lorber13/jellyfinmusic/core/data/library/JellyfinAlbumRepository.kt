@@ -5,7 +5,9 @@ import io.github.lorber13.jellyfinmusic.core.data.session.JellyfinSessionReposit
 import io.github.lorber13.jellyfinmusic.core.data.session.SessionState
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.microseconds
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
@@ -26,6 +28,12 @@ import org.jellyfin.sdk.model.api.request.GetItemsRequest
  */
 private const val COVER_SIZE_PIXELS = 512
 
+/** Cover size in pixels for the album screen's header, which is about 280 dp wide (840 px on a Pixel). */
+private const val LARGE_COVER_SIZE_PIXELS = 1024
+
+/** Jellyfin durations are in ticks of 100 nanoseconds. */
+private const val TICKS_PER_MICROSECOND = 10
+
 /**
  * Loads the albums from the signed-in user's server. All albums come in one request; libraries
  * of 10,000+ albums are LIB-12. Public, with an internal constructor, because the public
@@ -36,12 +44,9 @@ class JellyfinAlbumRepository @Inject internal constructor(
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : AlbumRepository {
     override suspend fun getAlbums(sort: AlbumSort): AlbumsResult {
-        val client = sessionRepository.signedInClient
-        val session = sessionRepository.session.value
-        // The library screens are only shown while someone is signed in.
-        check(client != null && session is SessionState.SignedIn) { "Albums requested with nobody signed in" }
+        val (client, userId) = signedInClientAndUserId()
         val request = GetItemsRequest(
-            userId = UUID.fromString(session.session.userId),
+            userId = userId,
             includeItemTypes = listOf(BaseItemKind.MUSIC_ALBUM),
             recursive = true,
             sortBy = sort.toSortBy(),
@@ -58,7 +63,51 @@ class JellyfinAlbumRepository @Inject internal constructor(
         } catch (error: ApiClientException) {
             return AlbumsResult.Failed(libraryFailureOf(error))
         }
-        return AlbumsResult.Success(items.map { item -> albumOf(item, coverImageUrlOf(client, item)) })
+        return AlbumsResult.Success(
+            items.map { item ->
+                albumOf(item, coverImageUrlOf(client, item, COVER_SIZE_PIXELS))
+            }
+        )
+    }
+
+    override suspend fun getAlbumDetail(albumId: String): AlbumDetailResult {
+        val (client, userId) = signedInClientAndUserId()
+        val albumUuid = UUID.fromString(albumId)
+        val tracksRequest = GetItemsRequest(
+            userId = userId,
+            parentId = albumUuid,
+            includeItemTypes = listOf(BaseItemKind.AUDIO),
+            sortBy = listOf(ItemSortBy.PARENT_INDEX_NUMBER, ItemSortBy.INDEX_NUMBER, ItemSortBy.SORT_NAME),
+            // The album screen shows no track images or play counts.
+            enableUserData = false,
+            enableImages = false,
+            enableTotalRecordCount = false
+        )
+        return try {
+            // The SDK reads responses on the calling thread. Both requests run at the same time.
+            withContext(ioDispatcher) {
+                val album = async { client.libraryApi.getItem(itemId = albumUuid, userId = userId).content }
+                val tracks = async { client.libraryApi.getItems(tracksRequest).content.items }
+                val albumItem = album.await()
+                AlbumDetailResult.Success(
+                    albumDetailOf(
+                        item = albumItem,
+                        coverImageUrl = coverImageUrlOf(client, albumItem, LARGE_COVER_SIZE_PIXELS),
+                        tracks = tracks.await().map(::trackOf)
+                    )
+                )
+            }
+        } catch (error: ApiClientException) {
+            AlbumDetailResult.Failed(libraryFailureOf(error))
+        }
+    }
+
+    private fun signedInClientAndUserId(): Pair<ApiClient, UUID> {
+        val client = sessionRepository.signedInClient
+        val session = sessionRepository.session.value
+        // The library screens are only shown while someone is signed in.
+        check(client != null && session is SessionState.SignedIn) { "Library requested with nobody signed in" }
+        return client to UUID.fromString(session.session.userId)
     }
 }
 
@@ -78,20 +127,40 @@ internal fun AlbumSort.toSortOrder(): List<SortOrder> {
 internal fun albumOf(item: BaseItemDto, coverImageUrl: String?): Album = Album(
     id = item.id.toString(),
     name = item.name.orEmpty(),
-    // AlbumArtist holds the album artists joined into one name; the list is a fallback for servers that leave it out.
-    artistName = item.albumArtist?.takeIf { it.isNotBlank() }
-        ?: item.albumArtists?.firstOrNull()?.name?.takeIf { it.isNotBlank() },
+    artistName = albumArtistOf(item),
     coverImageUrl = coverImageUrl
 )
 
+internal fun albumDetailOf(item: BaseItemDto, coverImageUrl: String?, tracks: List<Track>): AlbumDetail = AlbumDetail(
+    id = item.id.toString(),
+    name = item.name.orEmpty(),
+    artistName = albumArtistOf(item),
+    year = item.productionYear,
+    coverImageUrl = coverImageUrl,
+    tracks = tracks
+)
+
+internal fun trackOf(item: BaseItemDto): Track = Track(
+    id = item.id.toString(),
+    name = item.name.orEmpty(),
+    artistNames = item.artists.orEmpty().filter { it.isNotBlank() },
+    trackNumber = item.indexNumber,
+    discNumber = item.parentIndexNumber,
+    duration = item.runTimeTicks?.let { ticks -> (ticks / TICKS_PER_MICROSECOND).microseconds }
+)
+
+// AlbumArtist holds the album artists joined into one name; the list is a fallback for servers that leave it out.
+private fun albumArtistOf(item: BaseItemDto): String? = item.albumArtist?.takeIf { it.isNotBlank() }
+    ?: item.albumArtists?.firstOrNull()?.name?.takeIf { it.isNotBlank() }
+
 /** The cover's address, or null without artwork. The tag changes with the artwork, so cached covers stay current. */
-private fun coverImageUrlOf(client: ApiClient, item: BaseItemDto): String? {
+private fun coverImageUrlOf(client: ApiClient, item: BaseItemDto, sizePixels: Int): String? {
     val tag = item.imageTags?.get(ImageType.PRIMARY) ?: return null
     return client.imageApi.getItemImageUrl(
         itemId = item.id,
         imageType = ImageType.PRIMARY,
-        maxWidth = COVER_SIZE_PIXELS,
-        maxHeight = COVER_SIZE_PIXELS,
+        maxWidth = sizePixels,
+        maxHeight = sizePixels,
         tag = tag
     )
 }

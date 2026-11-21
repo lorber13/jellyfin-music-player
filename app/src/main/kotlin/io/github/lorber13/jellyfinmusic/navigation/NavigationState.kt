@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -57,7 +58,11 @@ fun rememberNavigationState(startDestination: TopLevelDestination): NavigationSt
 fun NavigationState.toDecoratedEntries(entryProvider: (NavKey) -> NavEntry<NavKey>): List<NavEntry<NavKey>> {
     val entriesByDestination = backStacks.mapValues { (_, backStack) ->
         // Each tab gets its own state holder so its screens keep their UI state while hidden.
-        val decorators = listOf(rememberSaveableStateHolderNavEntryDecorator<NavKey>())
+        // ViewModels belong to their entry, so each album screen gets its own and leaving it clears it.
+        val decorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
+            rememberViewModelStoreNavEntryDecorator<NavKey>()
+        )
         rememberDecoratedNavEntries(backStack, decorators, entryProvider)
     }
     return destinationsInUse.flatMap { destination -> entriesByDestination.getValue(destination) }

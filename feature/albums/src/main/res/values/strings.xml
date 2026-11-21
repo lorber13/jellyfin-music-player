@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- Title of the screen that lists all albums. -->
     <string name="feature_albums_title">Albums</string>
     <!-- Read by screen readers for the button in the albums screen's title bar that opens the sort options. -->
@@ -26,6 +26,17 @@
     <string name="feature_albums_error_server">The server couldn\'t load the albums. Try again later.</string>
     <!-- Button under an error message that loads the albums again. -->
     <string name="feature_albums_retry">Try again</string>
-    <!-- Title of the screen of a single album, until it shows the album's name. -->
-    <string name="feature_albums_album_title">Album</string>
+    <!-- Line under the album's name and artist on the album screen. The song count is feature_albums_detail_song_count and the duration is formatted by the system, e.g. "48 min" or "1 hr, 5 min". -->
+    <string name="feature_albums_detail_summary"><xliff:g id="year" example="2021">%1$d</xliff:g> · <xliff:g id="song_count" example="12 songs">%2$s</xliff:g> · <xliff:g id="duration" example="48 min">%3$s</xliff:g></string>
+    <!-- Line under the album's name and artist on the album screen, for albums without a release year. Same parts as feature_albums_detail_summary. -->
+    <string name="feature_albums_detail_summary_without_year"><xliff:g id="song_count" example="12 songs">%1$s</xliff:g> · <xliff:g id="duration" example="48 min">%2$s</xliff:g></string>
+    <!-- Number of songs on an album, part of the line under the album's name on the album screen. -->
+    <plurals name="feature_albums_detail_song_count">
+        <item quantity="one"><xliff:g id="count" example="1">%1$d</xliff:g> song</item>
+        <item quantity="other"><xliff:g id="count" example="12">%1$d</xliff:g> songs</item>
+    </plurals>
+    <!-- Heading above the tracks of one disc on the album screen of an album with several discs (CDs). -->
+    <string name="feature_albums_detail_disc">Disc <xliff:g id="disc_number" example="2">%1$d</xliff:g></string>
+    <!-- Shown when the server answered with an error while loading an album's tracks. -->
+    <string name="feature_albums_detail_error_server">The server couldn\'t load this album. Try again later.</string>
 </resources>

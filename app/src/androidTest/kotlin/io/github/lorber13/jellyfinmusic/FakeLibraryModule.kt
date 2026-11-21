@@ -6,11 +6,15 @@ import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import io.github.lorber13.jellyfinmusic.core.data.di.LibraryModule
 import io.github.lorber13.jellyfinmusic.core.data.library.Album
+import io.github.lorber13.jellyfinmusic.core.data.library.AlbumDetail
+import io.github.lorber13.jellyfinmusic.core.data.library.AlbumDetailResult
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumRepository
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumSort
 import io.github.lorber13.jellyfinmusic.core.data.library.AlbumsResult
 import io.github.lorber13.jellyfinmusic.core.data.library.LibraryPreferencesRepository
+import io.github.lorber13.jellyfinmusic.core.data.library.Track
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -26,6 +30,30 @@ object FakeLibraryModule {
     @Provides
     fun provideAlbumRepository(): AlbumRepository = object : AlbumRepository {
         override suspend fun getAlbums(sort: AlbumSort): AlbumsResult = AlbumsResult.Success(albums)
+
+        // Every album has the same tracks, named after it so tests can tell which one opened.
+        override suspend fun getAlbumDetail(albumId: String): AlbumDetailResult {
+            val album = albums.first { it.id == albumId }
+            return AlbumDetailResult.Success(
+                AlbumDetail(
+                    id = album.id,
+                    name = album.name,
+                    artistName = album.artistName,
+                    year = 2021,
+                    coverImageUrl = null,
+                    tracks = listOf(
+                        Track(
+                            id = "${album.id}-1",
+                            name = "${album.name} Overture",
+                            artistNames = listOfNotNull(album.artistName),
+                            trackNumber = 1,
+                            discNumber = 1,
+                            duration = 3.minutes
+                        )
+                    )
+                )
+            )
+        }
     }
 
     @Provides

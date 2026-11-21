@@ -4,4 +4,7 @@ package io.github.lorber13.jellyfinmusic.core.data.library
 interface AlbumRepository {
     /** Every album the user can see on the server, in the order of [sort]. */
     suspend fun getAlbums(sort: AlbumSort): AlbumsResult
+
+    /** The album with the id [albumId] and its tracks. */
+    suspend fun getAlbumDetail(albumId: String): AlbumDetailResult
 }
