@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -21,8 +20,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -47,7 +44,10 @@ import io.github.lorber13.jellyfinmusic.core.data.server.ServerLookupFailure
 import io.github.lorber13.jellyfinmusic.core.designsystem.theme.JellyfinMusicTheme
 
 @Composable
-internal fun ServerAddressScreen(onContinue: () -> Unit, viewModel: ServerAddressViewModel = hiltViewModel()) {
+internal fun ServerAddressScreen(
+    onContinue: (JellyfinServer) -> Unit,
+    viewModel: ServerAddressViewModel = hiltViewModel()
+) {
     val localNetworkAccess = rememberLocalNetworkAccess(onAnswered = viewModel::connect)
     val uiState = viewModel.uiState
     // Without the permission, a server on the home network looks exactly like one that is down.
@@ -82,7 +82,7 @@ internal fun ServerAddressContent(
     onConnect: () -> Unit,
     onAllowLocalNetworkAccess: () -> Unit,
     onChangeServer: () -> Unit,
-    onContinue: () -> Unit,
+    onContinue: (JellyfinServer) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
@@ -103,7 +103,11 @@ internal fun ServerAddressContent(
                     style = MaterialTheme.typography.headlineMedium
                 )
                 if (uiState is ServerAddressUiState.Connected) {
-                    ServerFound(server = uiState.server, onContinue = onContinue, onChangeServer = onChangeServer)
+                    ServerFound(
+                        server = uiState.server,
+                        onContinue = { onContinue(uiState.server) },
+                        onChangeServer = onChangeServer
+                    )
                 } else {
                     AddressForm(
                         address = address,
@@ -173,25 +177,13 @@ private fun AddressForm(
                 Text(stringResource(R.string.feature_login_allow_local_network))
             }
         }
-        ConnectButton(isEnabled = address.isNotBlank() && !isChecking, isChecking = isChecking, onClick = onConnect)
-    }
-}
-
-@Composable
-private fun ConnectButton(isEnabled: Boolean, isChecking: Boolean, onClick: () -> Unit) {
-    Button(onClick = onClick, enabled = isEnabled) {
-        if (isChecking) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    color = LocalContentColor.current,
-                    strokeWidth = 2.dp
-                )
-                Text(stringResource(R.string.feature_login_checking))
-            }
-        } else {
-            Text(stringResource(R.string.feature_login_connect))
-        }
+        ProgressButton(
+            text = stringResource(R.string.feature_login_connect),
+            progressText = stringResource(R.string.feature_login_checking),
+            isInProgress = isChecking,
+            isEnabled = address.isNotBlank() && !isChecking,
+            onClick = onConnect
+        )
     }
 }
 

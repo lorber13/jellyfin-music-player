@@ -7,4 +7,10 @@ interface ServerRepository {
      * HTTPS and HTTP and with Jellyfin's default ports.
      */
     suspend fun findServer(address: String): ServerLookupResult
+
+    /**
+     * The users [serverAddress] shows on its sign-in screen. Empty when the server hides them
+     * all, which many do, or when it can't be reached.
+     */
+    suspend fun getPublicUsers(serverAddress: String): List<PublicUser>
 }

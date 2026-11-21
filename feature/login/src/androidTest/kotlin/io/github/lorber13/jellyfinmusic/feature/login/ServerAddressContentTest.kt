@@ -10,7 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.lorber13.jellyfinmusic.core.data.server.JellyfinServer
 import io.github.lorber13.jellyfinmusic.core.data.server.ServerLookupFailure
 import io.github.lorber13.jellyfinmusic.core.designsystem.theme.JellyfinMusicTheme
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,22 +40,22 @@ class ServerAddressContentTest {
     }
 
     @Test
-    fun foundServer_showsItsNameAndContinues() {
-        var continued = false
+    fun foundServer_showsItsNameAndContinuesWithIt() {
+        var continuedWith: JellyfinServer? = null
         val server = JellyfinServer(address = "http://localhost:8096", name = "Test server", version = "12.4.0")
-        showContent(uiState = ServerAddressUiState.Connected(server), onContinue = { continued = true })
+        showContent(uiState = ServerAddressUiState.Connected(server), onContinue = { continuedWith = it })
 
         composeRule.onNode(hasText("Test server")).assertExists()
         composeRule.onNode(hasText(string(R.string.feature_login_continue))).performClick()
 
-        assertTrue(continued)
+        assertEquals(server, continuedWith)
     }
 
     private fun showContent(
         uiState: ServerAddressUiState,
         address: String = "localhost",
         showLocalNetworkHint: Boolean = false,
-        onContinue: () -> Unit = {}
+        onContinue: (JellyfinServer) -> Unit = {}
     ) {
         composeRule.setContent {
             JellyfinMusicTheme {

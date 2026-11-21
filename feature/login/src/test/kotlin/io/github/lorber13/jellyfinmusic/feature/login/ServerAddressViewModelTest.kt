@@ -1,6 +1,7 @@
 package io.github.lorber13.jellyfinmusic.feature.login
 
 import io.github.lorber13.jellyfinmusic.core.data.server.JellyfinServer
+import io.github.lorber13.jellyfinmusic.core.data.server.PublicUser
 import io.github.lorber13.jellyfinmusic.core.data.server.ServerLookupFailure
 import io.github.lorber13.jellyfinmusic.core.data.server.ServerLookupResult
 import io.github.lorber13.jellyfinmusic.core.data.server.ServerRepository
@@ -102,5 +103,7 @@ class ServerAddressViewModelTest {
             lookedUpAddresses += address
             return result
         }
+
+        override suspend fun getPublicUsers(serverAddress: String): List<PublicUser> = emptyList()
     }
 }

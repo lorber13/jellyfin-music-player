@@ -36,4 +36,32 @@
     <string name="feature_login_continue">Continue</string>
     <!-- Button that goes back to entering a different server address. -->
     <string name="feature_login_use_another_server">Use another server</string>
+
+    <!-- Title of the screen where the user signs in to the server they just found. -->
+    <string name="feature_login_sign_in_title">Sign in</string>
+    <!-- Button next to the server's name and address at the top of the sign-in screen. Goes
+         back to the previous screen to pick a different server. -->
+    <string name="feature_login_change_server">Change server</string>
+    <!-- Heading above the buttons with the names of the server's users. Tapping a name fills
+         in the username. -->
+    <string name="feature_login_public_users_label">Users on this server</string>
+    <!-- Label of the text field for the Jellyfin username. -->
+    <string name="feature_login_username_label">Username</string>
+    <!-- Label of the text field for the password. -->
+    <string name="feature_login_password_label">Password</string>
+    <!-- Content description of the eye button in the password field while the password is hidden. -->
+    <string name="feature_login_show_password">Show password</string>
+    <!-- Content description of the eye button in the password field while the password is shown. -->
+    <string name="feature_login_hide_password">Hide password</string>
+    <!-- Button that signs in with the entered username and password. -->
+    <string name="feature_login_sign_in">Sign in</string>
+    <!-- Shown on the sign-in button while the server checks the username and password. -->
+    <string name="feature_login_signing_in">Signing in…</string>
+
+    <!-- Error under the password field when the server rejected the username or password. -->
+    <string name="feature_login_error_wrong_credentials">Wrong username or password.</string>
+    <!-- Error under the password field when the server didn't answer while signing in. -->
+    <string name="feature_login_error_sign_in_unreachable">Couldn\'t reach the server. Check your connection and try again.</string>
+    <!-- Error under the password field when the server answered with an error while signing in. -->
+    <string name="feature_login_error_sign_in_server">The server couldn\'t sign you in. Try again later.</string>
 </resources>
