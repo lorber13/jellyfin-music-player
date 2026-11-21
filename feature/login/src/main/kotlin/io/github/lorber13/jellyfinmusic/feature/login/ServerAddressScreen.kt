@@ -1,6 +1,5 @@
 package io.github.lorber13.jellyfinmusic.feature.login
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,7 +55,7 @@ internal fun ServerAddressScreen(
     val uiState = viewModel.uiState
     // Without the permission, a server on the home network looks exactly like one that is down.
     val failure = (uiState as? ServerAddressUiState.Editing)?.failure
-    val showLocalNetworkHint = failure == ServerLookupFailure.UNREACHABLE && !localNetworkAccess.isGranted
+    val showLocalNetworkHint = failure == ServerLookupFailure.Unreachable && !localNetworkAccess.isGranted
 
     ServerAddressContent(
         address = viewModel.address,
@@ -152,7 +151,7 @@ private fun AddressForm(
         supportingText = failure?.let { reason ->
             {
                 Text(
-                    text = stringResource(reason.messageResource),
+                    text = failureMessage(reason),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
                 )
             }
@@ -220,14 +219,22 @@ private fun ColumnScope.ServerFound(server: JellyfinServer, onContinue: () -> Un
     }
 }
 
-@get:StringRes
-private val ServerLookupFailure.messageResource: Int
-    get() = when (this) {
-        ServerLookupFailure.INVALID_ADDRESS -> R.string.feature_login_error_invalid_address
-        ServerLookupFailure.UNREACHABLE -> R.string.feature_login_error_unreachable
-        ServerLookupFailure.SECURE_CONNECTION_FAILED -> R.string.feature_login_error_secure_connection
-        ServerLookupFailure.NOT_A_JELLYFIN_SERVER -> R.string.feature_login_error_not_jellyfin
-    }
+@Composable
+private fun failureMessage(failure: ServerLookupFailure): String = when (failure) {
+    ServerLookupFailure.InvalidAddress -> stringResource(R.string.feature_login_error_invalid_address)
+
+    ServerLookupFailure.Unreachable -> stringResource(R.string.feature_login_error_unreachable)
+
+    ServerLookupFailure.SecureConnectionFailed -> stringResource(R.string.feature_login_error_secure_connection)
+
+    ServerLookupFailure.NotAJellyfinServer -> stringResource(R.string.feature_login_error_not_jellyfin)
+
+    is ServerLookupFailure.UnsupportedVersion -> stringResource(
+        R.string.feature_login_error_unsupported_version,
+        failure.serverVersion,
+        failure.minimumVersion
+    )
+}
 
 @Preview
 @Composable
@@ -235,8 +242,27 @@ private fun ServerAddressUnreachablePreview() {
     JellyfinMusicTheme {
         ServerAddressContent(
             address = "192.168.1.10",
-            uiState = ServerAddressUiState.Editing(failure = ServerLookupFailure.UNREACHABLE),
+            uiState = ServerAddressUiState.Editing(failure = ServerLookupFailure.Unreachable),
             showLocalNetworkHint = true,
+            onAddressChange = {},
+            onConnect = {},
+            onAllowLocalNetworkAccess = {},
+            onChangeServer = {},
+            onContinue = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ServerAddressUnsupportedVersionPreview() {
+    JellyfinMusicTheme {
+        ServerAddressContent(
+            address = "192.168.1.10",
+            uiState = ServerAddressUiState.Editing(
+                failure = ServerLookupFailure.UnsupportedVersion(serverVersion = "10.8.13", minimumVersion = "10.9")
+            ),
+            showLocalNetworkHint = false,
             onAddressChange = {},
             onConnect = {},
             onAllowLocalNetworkAccess = {},

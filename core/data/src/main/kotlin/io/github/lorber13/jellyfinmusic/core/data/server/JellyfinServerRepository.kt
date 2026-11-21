@@ -13,6 +13,7 @@ import org.jellyfin.sdk.api.client.extensions.authenticationApi
 import org.jellyfin.sdk.api.client.extensions.userApi
 import org.jellyfin.sdk.discovery.RecommendedServerInfo
 import org.jellyfin.sdk.discovery.RecommendedServerInfoScore
+import org.jellyfin.sdk.discovery.RecommendedServerIssue
 
 // The SDK reads responses on the calling thread, so every call runs on the IO dispatcher.
 internal class JellyfinServerRepository @Inject constructor(
@@ -21,7 +22,7 @@ internal class JellyfinServerRepository @Inject constructor(
 ) : ServerRepository {
     override suspend fun findServer(address: String): ServerLookupResult {
         val candidates = jellyfin.discovery.getAddressCandidates(address.trim())
-        if (candidates.isEmpty()) return ServerLookupResult.Failed(ServerLookupFailure.INVALID_ADDRESS)
+        if (candidates.isEmpty()) return ServerLookupResult.Failed(ServerLookupFailure.InvalidAddress)
         val results = withContext(ioDispatcher) { jellyfin.discovery.getRecommendedServers(candidates).toList() }
         return pickServer(results)
     }
@@ -49,15 +50,10 @@ internal class JellyfinServerRepository @Inject constructor(
 }
 
 /**
- * The scores we connect to, best first. OK is the score the SDK gives servers older than the
- * minimum version; they are still accepted here so that ACC-07 can tell the user the version is
- * unsupported, instead of the app saying it found no server.
+ * The scores we connect to, best first. The SDK gives OK to servers older than the minimum
+ * version; those are reported as unsupported instead.
  */
-private val acceptedScores = listOf(
-    RecommendedServerInfoScore.GREAT,
-    RecommendedServerInfoScore.GOOD,
-    RecommendedServerInfoScore.OK
-)
+private val acceptedScores = listOf(RecommendedServerInfoScore.GREAT, RecommendedServerInfoScore.GOOD)
 
 /**
  * Picks the server to use from the SDK's results for every address candidate. The results come
@@ -65,7 +61,7 @@ private val acceptedScores = listOf(
  * result wins.
  */
 internal fun pickServer(results: List<RecommendedServerInfo>): ServerLookupResult {
-    if (results.isEmpty()) return ServerLookupResult.Failed(ServerLookupFailure.INVALID_ADDRESS)
+    if (results.isEmpty()) return ServerLookupResult.Failed(ServerLookupFailure.InvalidAddress)
 
     for (score in acceptedScores) {
         val result = results.firstOrNull { it.score == score } ?: continue
@@ -78,7 +74,24 @@ internal fun pickServer(results: List<RecommendedServerInfo>): ServerLookupResul
         )
         return ServerLookupResult.Found(server)
     }
+    unsupportedVersionOf(results)?.let { return ServerLookupResult.Failed(it) }
     return ServerLookupResult.Failed(mostHelpfulFailure(results.map(::failureOf)))
+}
+
+/**
+ * The failure for a Jellyfin server that answered but is older than the app supports. This is
+ * checked before the other failures, which would call a server that answered "not a Jellyfin
+ * server". It looks for the SDK's issue rather than the score, which other issues could share.
+ */
+private fun unsupportedVersionOf(results: List<RecommendedServerInfo>): ServerLookupFailure.UnsupportedVersion? {
+    val result = results.firstOrNull { result ->
+        result.issues.any { it is RecommendedServerIssue.UnsupportedServerVersion }
+    } ?: return null
+    return ServerLookupFailure.UnsupportedVersion(
+        serverVersion = result.systemInfo.getOrNull()?.version.orEmpty(),
+        // "10.9" rather than "10.9.0": the message says "10.9 or newer".
+        minimumVersion = "${minimumSupportedServerVersion.major}.${minimumSupportedServerVersion.minor}"
+    )
 }
 
 /**
@@ -87,9 +100,9 @@ internal fun pickServer(results: List<RecommendedServerInfo>): ServerLookupResul
  * something answered. Otherwise nothing was reachable.
  */
 private fun mostHelpfulFailure(failures: List<ServerLookupFailure>): ServerLookupFailure = listOf(
-    ServerLookupFailure.SECURE_CONNECTION_FAILED,
-    ServerLookupFailure.NOT_A_JELLYFIN_SERVER
-).firstOrNull { it in failures } ?: ServerLookupFailure.UNREACHABLE
+    ServerLookupFailure.SecureConnectionFailed,
+    ServerLookupFailure.NotAJellyfinServer
+).firstOrNull { it in failures } ?: ServerLookupFailure.Unreachable
 
 /**
  * Why one candidate failed. This looks at the response rather than the SDK's issues: the SDK
@@ -98,13 +111,13 @@ private fun mostHelpfulFailure(failures: List<ServerLookupFailure>): ServerLooku
  */
 private fun failureOf(result: RecommendedServerInfo): ServerLookupFailure {
     // The request worked, but the product name or version showed it isn't a usable Jellyfin server.
-    val error = result.systemInfo.exceptionOrNull() ?: return ServerLookupFailure.NOT_A_JELLYFIN_SERVER
+    val error = result.systemInfo.exceptionOrNull() ?: return ServerLookupFailure.NotAJellyfinServer
     return when (error) {
-        is SecureConnectionException -> ServerLookupFailure.SECURE_CONNECTION_FAILED
+        is SecureConnectionException -> ServerLookupFailure.SecureConnectionFailed
 
-        is InvalidStatusException, is InvalidContentException -> ServerLookupFailure.NOT_A_JELLYFIN_SERVER
+        is InvalidStatusException, is InvalidContentException -> ServerLookupFailure.NotAJellyfinServer
 
         // Timeouts, refused connections and blocked local network access.
-        else -> ServerLookupFailure.UNREACHABLE
+        else -> ServerLookupFailure.Unreachable
     }
 }

@@ -15,7 +15,7 @@ import org.junit.Test
 class PickServerTest {
     @Test
     fun noCandidates_isAnInvalidAddress() {
-        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.INVALID_ADDRESS), pickServer(emptyList()))
+        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.InvalidAddress), pickServer(emptyList()))
     }
 
     @Test
@@ -31,14 +31,16 @@ class PickServerTest {
     }
 
     @Test
-    fun acceptsAServerOlderThanTheMinimumVersion() {
+    fun serverOlderThanTheMinimumVersion_isAnUnsupportedVersion() {
         val tooOld = answered("http://old.example.com:8096", RecommendedServerInfoScore.OK, version = "10.8.13")
             .copy(issues = listOf(RecommendedServerIssue.UnsupportedServerVersion(ServerVersion(10, 8, 13))))
 
-        val result = pickServer(listOf(tooOld, unreachable("https://old.example.com")))
+        val result = pickServer(listOf(unreachable("https://old.example.com"), tooOld))
 
         assertEquals(
-            ServerLookupResult.Found(JellyfinServer("http://old.example.com:8096", "Music", "10.8.13")),
+            ServerLookupResult.Failed(
+                ServerLookupFailure.UnsupportedVersion(serverVersion = "10.8.13", minimumVersion = "10.9")
+            ),
             result
         )
     }
@@ -55,7 +57,7 @@ class PickServerTest {
     fun onlyUnreachableCandidates_isUnreachable() {
         val results = listOf(unreachable("https://nowhere.example.com"), unreachable("http://nowhere.example.com"))
 
-        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.UNREACHABLE), pickServer(results))
+        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.Unreachable), pickServer(results))
     }
 
     @Test
@@ -66,7 +68,7 @@ class PickServerTest {
             unreachable("http://music.example.com:8096")
         )
 
-        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.SECURE_CONNECTION_FAILED), pickServer(results))
+        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.SecureConnectionFailed), pickServer(results))
     }
 
     @Test
@@ -74,7 +76,7 @@ class PickServerTest {
         // A blocked local network connection or a reset fails with a plain IO error.
         val results = listOf(failed("http://192.168.1.10:8096", ApiClientException("Unknown IO error occurred!")))
 
-        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.UNREACHABLE), pickServer(results))
+        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.Unreachable), pickServer(results))
     }
 
     @Test
@@ -83,7 +85,7 @@ class PickServerTest {
             .copy(systemInfo = Result.success(PublicSystemInfo(productName = "Emby Server", version = "4.8.0")))
 
         assertEquals(
-            ServerLookupResult.Failed(ServerLookupFailure.NOT_A_JELLYFIN_SERVER),
+            ServerLookupResult.Failed(ServerLookupFailure.NotAJellyfinServer),
             pickServer(listOf(otherProduct))
         )
     }
@@ -92,7 +94,7 @@ class PickServerTest {
     fun somethingElseAnswering_isNotAJellyfinServer() {
         val results = listOf(unreachable("https://router.example.com"), notJellyfin("http://router.example.com"))
 
-        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.NOT_A_JELLYFIN_SERVER), pickServer(results))
+        assertEquals(ServerLookupResult.Failed(ServerLookupFailure.NotAJellyfinServer), pickServer(results))
     }
 
     private fun answered(

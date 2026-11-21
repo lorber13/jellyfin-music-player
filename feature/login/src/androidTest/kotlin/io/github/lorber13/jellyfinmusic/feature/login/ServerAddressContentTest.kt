@@ -30,13 +30,31 @@ class ServerAddressContentTest {
     @Test
     fun unreachableWithoutPermission_showsTheErrorAndTheLocalNetworkButton() {
         showContent(
-            uiState = ServerAddressUiState.Editing(failure = ServerLookupFailure.UNREACHABLE),
+            uiState = ServerAddressUiState.Editing(failure = ServerLookupFailure.Unreachable),
             showLocalNetworkHint = true
         )
 
         composeRule.onNode(hasText(string(R.string.feature_login_error_unreachable))).assertExists()
         composeRule.onNode(hasText(string(R.string.feature_login_allow_local_network)) and hasClickAction())
             .assertExists()
+    }
+
+    @Test
+    fun unsupportedVersion_showsBothVersions() {
+        showContent(
+            uiState = ServerAddressUiState.Editing(
+                failure = ServerLookupFailure.UnsupportedVersion(serverVersion = "10.8.13", minimumVersion = "10.9")
+            )
+        )
+
+        val expected = composeRule.activity.getString(
+            R.string.feature_login_error_unsupported_version,
+            "10.8.13",
+            "10.9"
+        )
+        composeRule.onNode(hasText(expected)).assertExists()
+        // Nothing to continue with: the user has to change the address or update the server.
+        composeRule.onNode(hasText(string(R.string.feature_login_continue))).assertDoesNotExist()
     }
 
     @Test

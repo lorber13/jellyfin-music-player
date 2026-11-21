@@ -50,13 +50,13 @@ class ServerAddressViewModelTest {
 
     @Test
     fun failedLookup_returnsToEditingWithTheReason() = runTest(dispatcher) {
-        repository.result = ServerLookupResult.Failed(ServerLookupFailure.UNREACHABLE)
+        repository.result = ServerLookupResult.Failed(ServerLookupFailure.Unreachable)
         viewModel.onAddressChange("nowhere.example.com")
 
         viewModel.connect()
         runCurrent()
 
-        assertEquals(ServerAddressUiState.Editing(failure = ServerLookupFailure.UNREACHABLE), viewModel.uiState)
+        assertEquals(ServerAddressUiState.Editing(failure = ServerLookupFailure.Unreachable), viewModel.uiState)
     }
 
     @Test
@@ -124,7 +124,7 @@ class ServerAddressViewModelTest {
     }
 
     private class FakeServerRepository : ServerRepository {
-        var result: ServerLookupResult = ServerLookupResult.Failed(ServerLookupFailure.UNREACHABLE)
+        var result: ServerLookupResult = ServerLookupResult.Failed(ServerLookupFailure.Unreachable)
         val lookedUpAddresses = mutableListOf<String>()
 
         override suspend fun findServer(address: String): ServerLookupResult {

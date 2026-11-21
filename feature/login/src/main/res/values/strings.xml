@@ -23,6 +23,9 @@
     <!-- Error under the address field when something answered at the address, but it isn't a
          Jellyfin server (e.g. a router's page). -->
     <string name="feature_login_error_not_jellyfin">Something answered at this address, but it isn\'t a Jellyfin server.</string>
+    <!-- Error under the address field when the Jellyfin server at the address is too old for the
+         app. "Jellyfin" is a product name. -->
+    <string name="feature_login_error_unsupported_version">This server runs Jellyfin <xliff:g id="server_version" example="10.8.13">%1$s</xliff:g>. The app needs Jellyfin <xliff:g id="minimum_version" example="10.9">%2$s</xliff:g> or newer.</string>
 
     <!-- Shown after a failed connection when the app isn't allowed to reach devices on the
          user's home network (Android 17 and newer). -->
