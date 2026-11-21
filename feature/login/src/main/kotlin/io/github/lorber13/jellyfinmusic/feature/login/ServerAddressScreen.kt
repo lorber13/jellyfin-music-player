@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -120,7 +121,7 @@ internal fun ServerAddressContent(
 }
 
 @Composable
-private fun ColumnScope.AddressForm(
+private fun AddressForm(
     address: String,
     isChecking: Boolean,
     failure: ServerLookupFailure?,
@@ -159,15 +160,26 @@ private fun ColumnScope.AddressForm(
             text = stringResource(R.string.feature_login_local_network_hint),
             style = MaterialTheme.typography.bodyMedium
         )
-        OutlinedButton(onClick = onAllowLocalNetworkAccess) {
-            Text(stringResource(R.string.feature_login_allow_local_network))
-        }
     }
-    Button(
-        onClick = onConnect,
-        modifier = Modifier.align(Alignment.End),
-        enabled = address.isNotBlank() && !isChecking
+    // Both buttons sit at the end, like on the found-server card. A FlowRow lets Connect wrap
+    // below when long translations or large fonts don't fit on one line.
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        if (showLocalNetworkHint) {
+            OutlinedButton(onClick = onAllowLocalNetworkAccess) {
+                Text(stringResource(R.string.feature_login_allow_local_network))
+            }
+        }
+        ConnectButton(isEnabled = address.isNotBlank() && !isChecking, isChecking = isChecking, onClick = onConnect)
+    }
+}
+
+@Composable
+private fun ConnectButton(isEnabled: Boolean, isChecking: Boolean, onClick: () -> Unit) {
+    Button(onClick = onClick, enabled = isEnabled) {
         if (isChecking) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(
