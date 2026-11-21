@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.lorber13.jellyfinmusic.core.designsystem.theme.JellyfinMusicTheme
-import io.github.lorber13.jellyfinmusic.ui.JellyfinMusicApp
+import io.github.lorber13.jellyfinmusic.ui.JellyfinMusicRoot
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             JellyfinMusicTheme {
-                JellyfinMusicApp()
+                JellyfinMusicRoot()
             }
         }
     }

@@ -29,7 +29,7 @@ User **`test`**, password **`test`** (administrator).
 
 The server listens on 127.0.0.1 only, so it can't be reached from your network. For a phone, `up.sh` runs `adb reverse tcp:8096 tcp:8096`, which forwards the phone's `localhost:8096` to this machine. If more than one device is connected, set `ANDROID_SERIAL` to pick one. The forward is lost when the phone is unplugged; run `up.sh` again to restore it.
 
-The server uses plain HTTP. The app's debug build has to allow cleartext traffic to `localhost` and `10.0.2.2`; that is part of ACC-01.
+The server uses plain HTTP, which the app allows for every server (`app/src/main/res/xml/network_security_config.xml`). On the server screen, enter `localhost` (the app adds port 8096 itself).
 
 ## Server version
 

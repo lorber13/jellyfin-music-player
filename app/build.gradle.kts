@@ -28,12 +28,14 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:data"))
     implementation(project(":feature:albums"))
+    implementation(project(":feature:login"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.material3.adaptive.navigation.suite)
     implementation(libs.navigation3.runtime)
     implementation(libs.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.kotlinx.serialization.core)
 
     testImplementation(libs.junit)

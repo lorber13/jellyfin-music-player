@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Plain HTTP is allowed for every server: many home Jellyfin servers run without HTTPS on
+     the local network, at addresses (192.168.x.x, my-nas.local) that can't be listed here.
+     When the user leaves out the protocol, the app tries HTTPS first. -->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config
+        cleartextTrafficPermitted="true"
+        tools:ignore="InsecureBaseConfiguration" />
+</network-security-config>

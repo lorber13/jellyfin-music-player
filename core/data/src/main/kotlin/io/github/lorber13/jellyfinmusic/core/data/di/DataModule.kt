@@ -1,13 +1,16 @@
 package io.github.lorber13.jellyfinmusic.core.data.di
 
+import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.github.lorber13.jellyfinmusic.core.data.server.JellyfinServerRepository
+import io.github.lorber13.jellyfinmusic.core.data.server.ServerRepository
 
-/**
- * Hilt bindings for the data layer. Empty for now: repositories are bound here as the
- * backlog items that need them are implemented.
- */
+/** Hilt bindings for the data layer's repositories. */
 @Module
 @InstallIn(SingletonComponent::class)
-object DataModule
+internal abstract class DataModule {
+    @Binds
+    abstract fun bindServerRepository(repository: JellyfinServerRepository): ServerRepository
+}

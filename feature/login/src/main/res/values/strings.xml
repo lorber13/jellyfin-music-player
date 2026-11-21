@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Title of the first screen the user sees, where they enter the address of their
+         Jellyfin server. -->
+    <string name="feature_login_server_title">Connect to your server</string>
+    <!-- Explanation under the title. The two example addresses must stay as they are. -->
+    <string name="feature_login_server_description">Enter the address of your Jellyfin server, for example <xliff:g id="example_domain">music.example.com</xliff:g> or <xliff:g id="example_ip">192.168.1.10:8096</xliff:g>.</string>
+    <!-- Label of the text field for the server address. -->
+    <string name="feature_login_server_address_label">Server address</string>
+    <!-- Button that checks the entered server address. -->
+    <string name="feature_login_connect">Connect</string>
+    <!-- Shown on the connect button while the app tries to reach the server. -->
+    <string name="feature_login_checking">Checking…</string>
+
+    <!-- Error under the address field when the text can't be a web address. -->
+    <string name="feature_login_error_invalid_address">This isn\'t a valid server address.</string>
+    <!-- Error under the address field when no server answered at the address. -->
+    <string name="feature_login_error_unreachable">Couldn\'t reach a server at this address. Check the address and your connection.</string>
+    <!-- Error under the address field when the server uses HTTPS with a certificate the phone
+         doesn't trust, e.g. an expired or self-signed one. -->
+    <string name="feature_login_error_secure_connection">The server\'s security certificate isn\'t trusted.</string>
+    <!-- Error under the address field when something answered at the address, but it isn't a
+         Jellyfin server (e.g. a router's page). -->
+    <string name="feature_login_error_not_jellyfin">Something answered at this address, but it isn\'t a Jellyfin server.</string>
+
+    <!-- Shown after a failed connection when the app isn't allowed to reach devices on the
+         user's home network (Android 17 and newer). -->
+    <string name="feature_login_local_network_hint">If the server is on your home network, allow the app to find and connect to devices on your local network.</string>
+    <!-- Button that asks for the local network permission. -->
+    <string name="feature_login_allow_local_network">Allow local network access</string>
+
+    <!-- Heading of the card shown once the server was found, above the server's name. -->
+    <string name="feature_login_server_found">Server found</string>
+    <!-- Button that moves on from the server screen once the server was found. -->
+    <string name="feature_login_continue">Continue</string>
+    <!-- Button that goes back to entering a different server address. -->
+    <string name="feature_login_use_another_server">Use another server</string>
+</resources>

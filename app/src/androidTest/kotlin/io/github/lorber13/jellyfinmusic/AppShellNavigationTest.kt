@@ -1,5 +1,6 @@
 package io.github.lorber13.jellyfinmusic
 
+import androidx.activity.ComponentActivity
 import androidx.annotation.StringRes
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasClickAction
@@ -7,7 +8,10 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.github.lorber13.jellyfinmusic.core.designsystem.theme.JellyfinMusicTheme
 import io.github.lorber13.jellyfinmusic.feature.albums.R as AlbumsR
+import io.github.lorber13.jellyfinmusic.ui.JellyfinMusicApp
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,7 +19,17 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class AppShellNavigationTest {
     @get:Rule
-    val composeRule = createAndroidComposeRule<MainActivity>()
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    // The app opens on the sign-in flow, so the shell is shown on its own.
+    @Before
+    fun showAppShell() {
+        composeRule.setContent {
+            JellyfinMusicTheme {
+                JellyfinMusicApp()
+            }
+        }
+    }
 
     @Test
     fun tappingEachTab_showsItsScreen() {

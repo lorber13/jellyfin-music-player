@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Needed from Android 17 to reach a server on the user's home network. -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+
+</manifest>
