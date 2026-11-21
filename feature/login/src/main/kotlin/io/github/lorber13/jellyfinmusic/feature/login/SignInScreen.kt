@@ -163,12 +163,12 @@ internal fun SignInContent(
                 }
                 if (isQuickConnectAvailable) {
                     HorizontalDivider()
-                    OutlinedButton(
-                        onClick = onUseQuickConnect,
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isSigningIn
-                    ) {
-                        Text(stringResource(R.string.feature_login_use_quick_connect))
+                    // Aligned like the Sign in button, and no wider, so the other way in doesn't
+                    // outweigh the main one.
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        OutlinedButton(onClick = onUseQuickConnect, enabled = !isSigningIn) {
+                            Text(stringResource(R.string.feature_login_use_quick_connect))
+                        }
                     }
                 }
             }

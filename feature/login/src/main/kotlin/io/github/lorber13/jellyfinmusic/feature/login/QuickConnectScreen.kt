@@ -105,13 +105,15 @@ internal fun QuickConnectContent(
                 }
                 CodeStatus(uiState = uiState, onRequestNewCode = onRequestNewCode)
                 HorizontalDivider()
-                OutlinedButton(
-                    onClick = onUsePassword,
-                    modifier = Modifier.fillMaxWidth(),
-                    // Once the code is approved, leaving would abandon a sign-in that is about to finish.
-                    enabled = uiState != QuickConnectUiState.SigningIn && uiState != QuickConnectUiState.SignedIn
-                ) {
-                    Text(stringResource(R.string.feature_login_use_password))
+                // In the same place and style as "Use Quick Connect" on the sign-in screen.
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    OutlinedButton(
+                        onClick = onUsePassword,
+                        // Once the code is approved, leaving would abandon a sign-in that is about to finish.
+                        enabled = uiState != QuickConnectUiState.SigningIn && uiState != QuickConnectUiState.SignedIn
+                    ) {
+                        Text(stringResource(R.string.feature_login_use_password))
+                    }
                 }
             }
         }
@@ -189,8 +191,11 @@ private fun ErrorStatus(message: String, actionText: String?, onAction: () -> Un
             color = MaterialTheme.colorScheme.error
         )
         if (actionText != null) {
-            Button(onClick = onAction) {
-                Text(actionText)
+            // End-aligned like the main buttons on the other sign-in screens.
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Button(onClick = onAction) {
+                    Text(actionText)
+                }
             }
         }
     }
