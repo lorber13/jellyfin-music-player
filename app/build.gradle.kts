@@ -65,6 +65,8 @@ dependencies {
     // Compose UI tests bring in an older Espresso that crashes on Android 16 and newer.
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.hilt.android.testing)
+    // Connects to the playback service the way the media notification does.
+    androidTestImplementation(libs.androidx.media3.session)
     kspAndroidTest(libs.hilt.compiler)
     debugImplementation(libs.compose.ui.test.manifest)
 }

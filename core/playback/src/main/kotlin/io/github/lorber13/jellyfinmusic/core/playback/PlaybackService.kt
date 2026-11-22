@@ -1,5 +1,6 @@
 package io.github.lorber13.jellyfinmusic.core.playback
 
+import android.app.PendingIntent
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -10,6 +11,7 @@ import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,8 +20,13 @@ import javax.inject.Inject
 
 /**
  * Plays music in the background and publishes it as a media session, which gives the media
- * notification and lets Bluetooth devices control playback. The app sends commands through
- * [MediaControllerMusicPlayer].
+ * notification and the lock-screen controls and lets Bluetooth devices control playback.
+ * Tapping the notification or the lock-screen controls opens the app. The app sends commands
+ * through [MediaControllerMusicPlayer].
+ *
+ * Media3's defaults cover the rest: the player holds a wake lock while it plays with the screen
+ * off; swiping the app away from Recents keeps the music playing, or stops the service if it is
+ * paused; and the service leaves the foreground after 10 minutes paused.
  */
 @AndroidEntryPoint
 class PlaybackService : MediaSessionService() {
@@ -31,9 +38,11 @@ class PlaybackService : MediaSessionService() {
     override fun onCreate() {
         // Hilt injects the fields here, so the player is built after it.
         super.onCreate()
-        mediaSession = MediaSession.Builder(this, buildPlayer())
+        useAppNotificationIcon()
+        val sessionBuilder = MediaSession.Builder(this, buildPlayer())
             .setCallback(TrackStreamCallback(streams))
-            .build()
+        openAppIntent()?.let(sessionBuilder::setSessionActivity)
+        mediaSession = sessionBuilder.build()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
@@ -45,6 +54,25 @@ class PlaybackService : MediaSessionService() {
         }
         mediaSession = null
         super.onDestroy()
+    }
+
+    /**
+     * What tapping the notification or the lock-screen controls opens: the app's launch intent,
+     * which brings the app back to the screen the user left and keeps this module independent of
+     * the app's activity. Null only without a launcher activity, as in a library's test APK.
+     */
+    private fun openAppIntent(): PendingIntent? {
+        val launchIntent = packageManager.getLaunchIntentForPackage(packageName) ?: return null
+        return PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+    }
+
+    // Opts in to Media3's unstable API for DefaultMediaNotificationProvider only; it is the only
+    // way to replace Media3's generic icon in the status bar.
+    @OptIn(UnstableApi::class)
+    private fun useAppNotificationIcon() {
+        val notificationProvider = DefaultMediaNotificationProvider.Builder(this).build()
+        notificationProvider.setSmallIcon(R.drawable.playback_ic_notification)
+        setMediaNotificationProvider(notificationProvider)
     }
 
     // Opts in to Media3's unstable API for setUsePlatformDiagnostics only.
