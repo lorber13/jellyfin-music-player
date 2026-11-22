@@ -73,6 +73,7 @@ class JellyfinAlbumRepository @Inject internal constructor(
     override suspend fun getAlbumDetail(albumId: String): AlbumDetailResult {
         val (client, userId) = signedInClientAndUserId()
         val albumUuid = UUID.fromString(albumId)
+        val albumRequest = albumRequestOf(albumUuid, userId)
         val tracksRequest = GetItemsRequest(
             userId = userId,
             parentId = albumUuid,
@@ -86,9 +87,11 @@ class JellyfinAlbumRepository @Inject internal constructor(
         return try {
             // The SDK reads responses on the calling thread. Both requests run at the same time.
             withContext(ioDispatcher) {
-                val album = async { client.libraryApi.getItem(itemId = albumUuid, userId = userId).content }
+                val album = async { client.libraryApi.getItems(albumRequest).content.items.firstOrNull() }
                 val tracks = async { client.libraryApi.getItems(tracksRequest).content.items }
-                val albumItem = album.await()
+                // The album was deleted on the server since the albums list was loaded.
+                val albumItem =
+                    album.await() ?: return@withContext AlbumDetailResult.Failed(LibraryFailure.SERVER_ERROR)
                 AlbumDetailResult.Success(
                     albumDetailOf(
                         item = albumItem,
@@ -110,6 +113,20 @@ class JellyfinAlbumRepository @Inject internal constructor(
         return client to UUID.fromString(session.session.userId)
     }
 }
+
+/**
+ * The request for one album. A list request rather than the single-item one, because only lists
+ * can leave out the user data, which the album screen doesn't show: Jellyfin 10.9 sends it
+ * without the ItemId field that the SDK requires, so the single-item request fails there.
+ */
+internal fun albumRequestOf(albumId: UUID, userId: UUID): GetItemsRequest = GetItemsRequest(
+    userId = userId,
+    ids = listOf(albumId),
+    enableUserData = false,
+    enableImageTypes = listOf(ImageType.PRIMARY),
+    imageTypeLimit = 1,
+    enableTotalRecordCount = false
+)
 
 /** The server's sort keys for [AlbumSort]. Albums with the same year or date are ordered by name. */
 internal fun AlbumSort.toSortBy(): List<ItemSortBy> = when (field) {
