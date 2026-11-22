@@ -18,7 +18,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
 
 /**
- * The file that holds the user's preferences, such as the albums sort order. It holds nothing
+ * The file that holds the user's preferences, such as the albums sort order, and the app's device
+ * id ([io.github.lorber13.jellyfinmusic.core.data.client.DeviceIdStore]). It holds nothing
  * sensitive, so unlike the session it is not encrypted.
  */
 @Module

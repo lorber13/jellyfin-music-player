@@ -1,5 +1,6 @@
 package io.github.lorber13.jellyfinmusic.core.data.session
 
+import io.github.lorber13.jellyfinmusic.core.data.client.JellyfinClients
 import io.github.lorber13.jellyfinmusic.core.data.di.ApplicationScope
 import io.github.lorber13.jellyfinmusic.core.data.di.IoDispatcher
 import io.github.lorber13.jellyfinmusic.core.data.server.JellyfinServer
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jellyfin.sdk.Jellyfin
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.exception.InvalidContentException
@@ -30,7 +30,7 @@ import org.jellyfin.sdk.model.api.QuickConnectDto
  */
 @Singleton
 internal class JellyfinSessionRepository @Inject constructor(
-    private val jellyfin: Jellyfin,
+    private val clients: JellyfinClients,
     private val sessionStore: SessionStore,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
@@ -57,12 +57,12 @@ internal class JellyfinSessionRepository @Inject constructor(
             return
         }
         signedInClient =
-            jellyfin.createApi(baseUrl = storedSession.serverAddress, accessToken = storedSession.accessToken)
+            clients.createClient(baseUrl = storedSession.serverAddress, accessToken = storedSession.accessToken)
         currentSession.value = SessionState.SignedIn(storedSession.userSession)
     }
 
     override suspend fun signIn(server: JellyfinServer, username: String, password: String): SignInResult {
-        val client = jellyfin.createApi(baseUrl = server.address)
+        val client = clients.createClient(baseUrl = server.address)
         val result = try {
             withContext(ioDispatcher) {
                 client.authenticationApi.authenticateUserByName(
@@ -78,7 +78,7 @@ internal class JellyfinSessionRepository @Inject constructor(
     override suspend fun startQuickConnect(server: JellyfinServer): QuickConnectStartResult {
         val result = try {
             withContext(ioDispatcher) {
-                jellyfin.createApi(baseUrl = server.address).authenticationApi.initiateQuickConnect().content
+                clients.createClient(baseUrl = server.address).authenticationApi.initiateQuickConnect().content
             }
         } catch (error: ApiClientException) {
             return QuickConnectStartResult.Failed(quickConnectFailureOf(error))
@@ -89,7 +89,7 @@ internal class JellyfinSessionRepository @Inject constructor(
     override suspend fun checkQuickConnect(server: JellyfinServer, request: QuickConnectRequest): QuickConnectStatus {
         val result = try {
             withContext(ioDispatcher) {
-                jellyfin.createApi(baseUrl = server.address).authenticationApi.getQuickConnectState(request.secret)
+                clients.createClient(baseUrl = server.address).authenticationApi.getQuickConnectState(request.secret)
                     .content
             }
         } catch (error: ApiClientException) {
@@ -99,7 +99,7 @@ internal class JellyfinSessionRepository @Inject constructor(
     }
 
     override suspend fun signInWithQuickConnect(server: JellyfinServer, request: QuickConnectRequest): SignInResult {
-        val client = jellyfin.createApi(baseUrl = server.address)
+        val client = clients.createClient(baseUrl = server.address)
         val result = try {
             withContext(ioDispatcher) {
                 client.authenticationApi.authenticateWithQuickConnect(QuickConnectDto(secret = request.secret)).content

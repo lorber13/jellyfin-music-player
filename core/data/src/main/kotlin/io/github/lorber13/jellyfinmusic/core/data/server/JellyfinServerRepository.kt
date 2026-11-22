@@ -1,10 +1,10 @@
 package io.github.lorber13.jellyfinmusic.core.data.server
 
+import io.github.lorber13.jellyfinmusic.core.data.client.JellyfinClients
 import io.github.lorber13.jellyfinmusic.core.data.di.IoDispatcher
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import org.jellyfin.sdk.Jellyfin
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.exception.InvalidContentException
 import org.jellyfin.sdk.api.client.exception.InvalidStatusException
@@ -17,10 +17,11 @@ import org.jellyfin.sdk.discovery.RecommendedServerIssue
 
 // The SDK reads responses on the calling thread, so every call runs on the IO dispatcher.
 internal class JellyfinServerRepository @Inject constructor(
-    private val jellyfin: Jellyfin,
+    private val clients: JellyfinClients,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ServerRepository {
     override suspend fun findServer(address: String): ServerLookupResult {
+        val jellyfin = clients.jellyfin()
         val candidates = jellyfin.discovery.getAddressCandidates(address.trim())
         if (candidates.isEmpty()) return ServerLookupResult.Failed(ServerLookupFailure.InvalidAddress)
         val results = withContext(ioDispatcher) { jellyfin.discovery.getRecommendedServers(candidates).toList() }
@@ -29,7 +30,7 @@ internal class JellyfinServerRepository @Inject constructor(
 
     override suspend fun getPublicUsers(serverAddress: String): List<PublicUser> {
         val users = try {
-            withContext(ioDispatcher) { jellyfin.createApi(baseUrl = serverAddress).userApi.getPublicUsers().content }
+            withContext(ioDispatcher) { clients.createClient(baseUrl = serverAddress).userApi.getPublicUsers().content }
         } catch (_: ApiClientException) {
             // The picker is a shortcut; without it the user types their name.
             return emptyList()
@@ -41,7 +42,7 @@ internal class JellyfinServerRepository @Inject constructor(
 
     override suspend fun isQuickConnectEnabled(serverAddress: String): Boolean = try {
         withContext(ioDispatcher) {
-            jellyfin.createApi(baseUrl = serverAddress).authenticationApi.getQuickConnectEnabled().content
+            clients.createClient(baseUrl = serverAddress).authenticationApi.getQuickConnectEnabled().content
         }
     } catch (_: ApiClientException) {
         // Quick Connect is an alternative; without it the user signs in with their password.

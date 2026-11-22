@@ -1,20 +1,17 @@
 package io.github.lorber13.jellyfinmusic.core.data.library
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.preferencesOf
 import androidx.datastore.preferences.core.stringPreferencesKey
+import io.github.lorber13.jellyfinmusic.core.data.FakePreferencesDataStore
 import java.io.IOException
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class LibraryPreferencesRepositoryTest {
-    private val dataStore = FakeDataStore()
+    private val dataStore = FakePreferencesDataStore()
     private val repository = DataStoreLibraryPreferencesRepository(dataStore)
 
     @Test
@@ -55,21 +52,5 @@ class LibraryPreferencesRepositoryTest {
         repository.setAlbumSort(AlbumSort(AlbumSortField.YEAR, SortDirection.DESCENDING))
 
         assertEquals(emptyPreferences(), dataStore.value)
-    }
-
-    private class FakeDataStore : DataStore<Preferences> {
-        var value: Preferences = emptyPreferences()
-        var failure: Exception? = null
-
-        override val data: Flow<Preferences> = flow {
-            failure?.let { throw it }
-            emit(value)
-        }
-
-        override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
-            failure?.let { throw it }
-            value = transform(value)
-            return value
-        }
     }
 }
