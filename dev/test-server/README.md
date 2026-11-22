@@ -45,22 +45,23 @@ Each version keeps its own server data in `data/<version>/`, so switching versio
 
 ## Sample library
 
-`generate-library.sh` (called by `up.sh`) writes 11 albums and 84 tracks into `data/music/` in about 40 seconds. The tracks are sine tones, 30 seconds long unless noted. All artists and albums are fictional, and the library has internet metadata turned off, so the server never matches them to real ones.
+`generate-library.sh` (called by `up.sh`) writes 12 albums and 90 tracks into `data/music/` in about 40 seconds. The tracks are sine tones, 30 seconds long unless noted. All artists and albums are fictional, and the library has internet metadata turned off, so the server never matches them to real ones.
 
-| Album                              | Artist             | Format       | What it covers                                                                          |
-| ---------------------------------- | ------------------ | ------------ | --------------------------------------------------------------------------------------- |
-| Morning Light (2015)               | Aurora Fields      | FLAC 16/44.1 | Plain album with `folder.jpg` artwork                                                   |
-| Evening Tide (2018)                | Aurora Fields      | FLAC 24/96   | Hi-res file the server may have to convert (PLY-13)                                     |
-| Gapless Horizons (2021)            | Aurora Fields      | FLAC 16/44.1 | One continuous sweep across 5 tracks: a gap or click between tracks is audible (PLY-12) |
-| Steam & Rust (2009)                | The Copper Kettles | MP3 320      | Artwork embedded in the files, no `folder.jpg`                                          |
-| Pressure Valve (2012)              | The Copper Kettles | MP3 320      | Embedded artwork                                                                        |
-| Canciones del Río (2016)           | Café Ñandú         | AAC (`.m4a`) | Embedded artwork, accented names                                                        |
-| Été à Montréal (2019)              | Café Ñandú         | Opus         | Accented names                                                                          |
-| ネオン Signals (2020)              | 東京 Echo Unit     | Opus         | Japanese names                                                                          |
-| Grid Lines (Deluxe Edition) (2022) | 東京 Echo Unit     | FLAC 16/44.1 | 2 discs of 6 tracks (LIB-07)                                                            |
-| Long Form (2023)                   | 東京 Echo Unit     | Ogg Vorbis   | No artwork at all; a 10-minute track for seeking                                        |
-| Summer Sampler Vol. 1 (2024)       | Various Artists    | MP3 320      | Compilation: each track has its own artist, including ones with no album                |
+| Album                              | Artist                    | Format        | What it covers                                                                                      |
+| ---------------------------------- | ------------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
+| Morning Light (2015)               | Aurora Fields             | FLAC 16/44.1  | Plain album with `folder.jpg` artwork                                                               |
+| Evening Tide (2018)                | Aurora Fields             | FLAC 24/96    | Hi-res file; plays as the original where the FLAC decoder takes 96 kHz, as on the Pixel 10 (PLY-13) |
+| Gapless Horizons (2021)            | Aurora Fields             | FLAC 16/44.1  | One continuous sweep across 5 tracks: a gap or click between tracks is audible (PLY-12)             |
+| Steam & Rust (2009)                | The Copper Kettles        | MP3 320       | Artwork embedded in the files, no `folder.jpg`                                                      |
+| Pressure Valve (2012)              | The Copper Kettles        | MP3 320       | Embedded artwork                                                                                    |
+| Canciones del Río (2016)           | Café Ñandú                | AAC (`.m4a`)  | Embedded artwork, accented names                                                                    |
+| Été à Montréal (2019)              | Café Ñandú                | Opus          | Accented names                                                                                      |
+| ネオン Signals (2020)              | 東京 Echo Unit            | Opus          | Japanese names                                                                                      |
+| Grid Lines (Deluxe Edition) (2022) | 東京 Echo Unit            | FLAC 16/44.1  | 2 discs of 6 tracks (LIB-07)                                                                        |
+| Long Form (2023)                   | 東京 Echo Unit            | Ogg Vorbis    | No artwork at all; a 10-minute track for seeking                                                    |
+| Harbour Sessions (2017)            | The Lighthouse Collective | ALAC (`.m4a`) | Apple Lossless: most phones can't decode it, so the server converts it (PLY-13)                     |
+| Summer Sampler Vol. 1 (2024)       | Various Artists           | MP3 320       | Compilation: each track has its own artist, including ones with no album                            |
 
-Together they give 5 album artists with 1–3 albums each, 5 genres and release years from 2009 to 2024. `up.sh` also creates **Sample Playlist** with 10 tracks from different albums and formats.
+Together they give 6 album artists with 1–3 albums each, 6 genres and release years from 2009 to 2024. `up.sh` also creates **Sample Playlist** with 10 tracks from different albums and formats.
 
 To change the library, edit `generate-library.sh`, then run `reset.sh --all` and `up.sh`.

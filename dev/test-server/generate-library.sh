@@ -2,7 +2,7 @@
 # Generates the sample music library in data/music. Tracks are short sine
 # tones with full tags; all artists and albums are fictional. The albums are
 # chosen to cover cases the app has to handle: several formats including
-# hi-res FLAC, a multi-disc album, a compilation, a gapless album, Unicode
+# hi-res FLAC and ALAC (which most phones can't decode), a multi-disc album, a compilation, a gapless album, Unicode
 # names, embedded or missing artwork and one long track. See README.md.
 set -euo pipefail
 
@@ -43,7 +43,7 @@ is_multi_disc=false
 track_number=0
 
 # start_album ARTIST TITLE YEAR GENRE FORMAT ARTWORK COLOR_FROM COLOR_TO
-#   FORMAT:  flac | flac-hires | mp3 | opus | m4a | ogg
+#   FORMAT:  flac | flac-hires | mp3 | opus | m4a | alac | ogg
 #   ARTWORK: folder (folder.jpg next to the tracks) | embedded (inside each
 #            file, mp3 and m4a only) | none
 start_album() {
@@ -173,6 +173,7 @@ gapless_sweep_source() {
 file_extension() {
     case "$album_format" in
         flac | flac-hires) echo flac ;;
+        alac) echo m4a ;;
         *) echo "$album_format" ;;
     esac
 }
@@ -185,6 +186,7 @@ encoder_options_for_format() {
         mp3) echo "-c:a libmp3lame -b:a 320k -id3v2_version 3" ;;
         opus) echo "-c:a libopus -b:a 128k" ;;
         m4a) echo "-c:a aac -b:a 256k" ;;
+        alac) echo "-c:a alac -sample_fmt s16p" ;;
         ogg) echo "-c:a libvorbis -q:a 6" ;;
     esac
 }
@@ -289,6 +291,14 @@ start_album "東京 Echo Unit" "Long Form" 2023 Electronic ogg none "" ""
 add_track "Prelude"
 track_seconds=600 add_track "The Long Way Round"
 add_track "Coda"
+
+start_album "The Lighthouse Collective" "Harbour Sessions" 2017 Folk alac folder "#495057" "#e9c46a"
+add_track "Foghorn Morning"
+add_track "Rope and Pulley"
+add_track "Keeper's Waltz"
+add_track "Tide Tables"
+add_track "Gulls Over the Pier"
+add_track "Last Ferry Home"
 
 start_album "Various Artists" "Summer Sampler Vol. 1" 2024 Pop mp3 folder "#fab005" "#fd7e14"
 album_is_compilation=true
