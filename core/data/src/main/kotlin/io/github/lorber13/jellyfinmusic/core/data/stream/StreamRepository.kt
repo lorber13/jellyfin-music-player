@@ -3,10 +3,13 @@ package io.github.lorber13.jellyfinmusic.core.data.stream
 /** Where the player streams the signed-in user's music from. */
 interface StreamRepository {
     /**
-     * The address of the track's original file, or null when nobody is signed in or [trackId] is
-     * not a track id. The address holds no credentials; send [requestHeaders] with it.
+     * How to stream each of [trackIds], in the same order: the original file when its format is
+     * one of [playableFormats], otherwise a conversion by the server. Null when nobody is signed
+     * in, an id is not a track id, the server can't be reached, or it can neither send nor
+     * convert one of the tracks. The addresses hold no credentials; send [requestHeaders] with
+     * them.
      */
-    fun streamUrlOf(trackId: String): String?
+    suspend fun streamsOf(trackIds: List<String>, playableFormats: List<DirectPlayFormat>): List<TrackStream>?
 
     /**
      * The headers that authorize a stream request, or none when nobody is signed in. Safe to call

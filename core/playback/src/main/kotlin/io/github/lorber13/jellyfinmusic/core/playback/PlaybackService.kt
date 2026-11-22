@@ -17,6 +17,10 @@ import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.lorber13.jellyfinmusic.core.data.stream.StreamRepository
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
 /**
  * Plays music in the background and publishes it as a media session, which gives the media
@@ -35,12 +39,16 @@ class PlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
 
+    // Cancelled when the service is destroyed, together with stream lookups still running.
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
     override fun onCreate() {
         // Hilt injects the fields here, so the player is built after it.
         super.onCreate()
         useAppNotificationIcon()
+        val playableFormats = directPlayFormatsOf(decodableAudioCodecs())
         val sessionBuilder = MediaSession.Builder(this, buildPlayer())
-            .setCallback(TrackStreamCallback(streams))
+            .setCallback(TrackStreamCallback(streams, playableFormats, serviceScope))
         openAppIntent()?.let(sessionBuilder::setSessionActivity)
         mediaSession = sessionBuilder.build()
     }
@@ -48,6 +56,7 @@ class PlaybackService : MediaSessionService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
 
     override fun onDestroy() {
+        serviceScope.cancel()
         mediaSession?.run {
             player.release()
             release()
@@ -96,8 +105,10 @@ class PlaybackService : MediaSessionService() {
 
     /**
      * Adds the signed-in user's credentials to every stream request, read anew each time so a
-     * new sign-in applies. Media3 only offers per-request headers through its unstable
-     * ResolvingDataSource. DefaultDataSource keeps local files and content URIs working.
+     * new sign-in applies. That includes the playlists and segments of the server's HLS
+     * conversions, which DefaultMediaSourceFactory loads through the same factory. Media3 only
+     * offers per-request headers through its unstable ResolvingDataSource. DefaultDataSource
+     * keeps local files and content URIs working.
      */
     @OptIn(UnstableApi::class)
     private fun authorizedDataSourceFactory(): DataSource.Factory {

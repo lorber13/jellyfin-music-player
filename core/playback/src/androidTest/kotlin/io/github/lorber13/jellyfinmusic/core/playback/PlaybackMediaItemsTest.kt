@@ -1,8 +1,10 @@
 package io.github.lorber13.jellyfinmusic.core.playback
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.github.lorber13.jellyfinmusic.core.data.stream.StreamRepository
+import io.github.lorber13.jellyfinmusic.core.data.stream.StreamKind
+import io.github.lorber13.jellyfinmusic.core.data.stream.TrackStream
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -10,12 +12,10 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class PlaybackMediaItemsTest {
-    private val streams = object : StreamRepository {
-        override fun streamUrlOf(trackId: String): String? =
-            if (trackId.startsWith("track-")) "http://music.local:8096/Audio/$trackId/stream?static=true" else null
-
-        override fun requestHeaders(): Map<String, String> = emptyMap()
-    }
+    private val originalFile =
+        TrackStream("http://music.local:8096/Audio/track-1/stream?static=true", StreamKind.ORIGINAL_FILE)
+    private val conversion =
+        TrackStream("http://music.local:8096/audio/track-2/master.m3u8?AudioCodec=aac", StreamKind.HLS_CONVERSION)
 
     @Test
     fun mediaItem_carriesTheTrackIdAndWhatTheNotificationShows_butNoAddress() {
@@ -56,32 +56,32 @@ class PlaybackMediaItemsTest {
 
     @Test
     fun playableItems_getTheStreamAddressOfTheirTrack() {
-        val items = playableMediaItemsOf(listOf(itemWithId("track-1"), itemWithId("track-2")), streams)
+        val items =
+            playableMediaItemsOf(listOf(itemWithId("track-1"), itemWithId("track-2")), listOf(originalFile, conversion))
 
-        assertEquals(
-            listOf(
-                "http://music.local:8096/Audio/track-1/stream?static=true",
-                "http://music.local:8096/Audio/track-2/stream?static=true"
-            ),
-            items?.map { it.localConfiguration?.uri.toString() }
-        )
+        assertEquals(listOf(originalFile.url, conversion.url), items.map { it.localConfiguration?.uri.toString() })
+        assertEquals(listOf("track-1", "track-2"), items.map { it.mediaId })
     }
 
     @Test
-    fun playableItems_replaceAnAddressSentByTheController() {
-        val item = itemWithId("track-1").buildUpon().setUri("https://elsewhere.example/song.mp3").build()
+    fun playableItems_ofConversions_areHlsAndOriginalFilesHaveNoType() {
+        val items =
+            playableMediaItemsOf(listOf(itemWithId("track-1"), itemWithId("track-2")), listOf(originalFile, conversion))
 
-        val items = playableMediaItemsOf(listOf(item), streams)
-
-        assertEquals(
-            "http://music.local:8096/Audio/track-1/stream?static=true",
-            items?.single()?.localConfiguration?.uri.toString()
-        )
+        assertEquals(listOf(null, MimeTypes.APPLICATION_M3U8), items.map { it.localConfiguration?.mimeType })
     }
 
     @Test
-    fun playableItems_withAnUnknownId_areRejectedTogether() {
-        assertNull(playableMediaItemsOf(listOf(itemWithId("track-1"), itemWithId("somewhere-else")), streams))
+    fun playableItems_replaceAnAddressAndTypeSentByTheController() {
+        val item = itemWithId("track-1").buildUpon()
+            .setUri("https://elsewhere.example/song.m3u8")
+            .setMimeType(MimeTypes.APPLICATION_M3U8)
+            .build()
+
+        val playable = playableMediaItemsOf(listOf(item), listOf(originalFile)).single()
+
+        assertEquals(originalFile.url, playable.localConfiguration?.uri.toString())
+        assertNull(playable.localConfiguration?.mimeType)
     }
 
     private fun itemWithId(mediaId: String): MediaItem = MediaItem.Builder().setMediaId(mediaId).build()

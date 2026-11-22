@@ -1,37 +1,63 @@
 package io.github.lorber13.jellyfinmusic.core.data.stream
 
+import io.github.lorber13.jellyfinmusic.core.data.di.IoDispatcher
 import io.github.lorber13.jellyfinmusic.core.data.session.JellyfinSessionRepository
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
 import org.jellyfin.sdk.api.client.ApiClient
-import org.jellyfin.sdk.api.client.extensions.audioApi
+import org.jellyfin.sdk.api.client.exception.ApiClientException
+import org.jellyfin.sdk.api.client.extensions.post
 import org.jellyfin.sdk.api.client.util.AuthorizationHeaderBuilder
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 
 private const val AUTHORIZATION_HEADER = "Authorization"
 
 /**
- * Builds stream addresses for the signed-in user's server. The access token goes in a header
- * rather than in the address, because addresses end up in logs and error messages.
+ * Finds out how to stream the signed-in user's tracks. The server decides per track whether the
+ * phone gets the original file or a conversion: each request describes the formats the phone
+ * plays. The access token goes in a header rather than in the address, because addresses end up
+ * in logs and error messages.
  */
-internal class JellyfinStreamRepository @Inject constructor(private val sessionRepository: JellyfinSessionRepository) :
-    StreamRepository {
+internal class JellyfinStreamRepository @Inject constructor(
+    private val sessionRepository: JellyfinSessionRepository,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
+) : StreamRepository {
     // Unlike the library, no check that someone is signed in: media controllers outside the app,
     // such as Bluetooth devices, can ask for playback at any time.
-    override fun streamUrlOf(trackId: String): String? {
+    override suspend fun streamsOf(
+        trackIds: List<String>,
+        playableFormats: List<DirectPlayFormat>
+    ): List<TrackStream>? {
         val client = sessionRepository.signedInClient ?: return null
-        return streamUrlOf(client, trackId)
+        val itemIds = trackIds.map { trackId -> trackId.toUUIDOrNull() ?: return null }
+        val request = playbackInfoRequestOf(playableFormats)
+        val responses = try {
+            // The SDK reads responses on the calling thread. All requests run at the same time.
+            withContext(ioDispatcher) {
+                itemIds.map { itemId ->
+                    async {
+                        // The same request as the SDK's getPostedPlaybackInfo, read with the app's own model.
+                        client.post<PlaybackInfo>(
+                            pathTemplate = "/Items/{itemId}/PlaybackInfo",
+                            pathParameters = mapOf("itemId" to itemId),
+                            requestBody = request
+                        ).content
+                    }
+                }.awaitAll()
+            }
+        } catch (error: ApiClientException) {
+            return null
+        }
+        return itemIds.zip(responses) { itemId, response -> trackStreamOf(client, itemId, response) ?: return null }
     }
 
     override fun requestHeaders(): Map<String, String> {
         val client = sessionRepository.signedInClient ?: return emptyMap()
         return mapOf(AUTHORIZATION_HEADER to authorizationHeaderOf(client))
     }
-}
-
-/** The original file, unconverted, so seeking works and quality isn't lost. Server conversion is PLY-13. */
-internal fun streamUrlOf(client: ApiClient, trackId: String): String? {
-    val itemId = trackId.toUUIDOrNull() ?: return null
-    return client.audioApi.getAudioStreamUrl(itemId = itemId, static = true)
 }
 
 /** The same header the SDK sends with its own requests, so the server sees one device and session. */
