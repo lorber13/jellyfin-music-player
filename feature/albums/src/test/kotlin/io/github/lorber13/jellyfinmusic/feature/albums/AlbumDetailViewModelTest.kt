@@ -11,6 +11,8 @@ import io.github.lorber13.jellyfinmusic.core.playback.MusicPlayer
 import io.github.lorber13.jellyfinmusic.core.playback.QueueItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -121,6 +123,8 @@ class AlbumDetailViewModelTest {
 
     private class FakeMusicPlayer : MusicPlayer {
         val playRequests = mutableListOf<Pair<List<QueueItem>, Int>>()
+
+        override val errorMessages: Flow<String> = emptyFlow()
 
         override fun play(queue: List<QueueItem>, startIndex: Int) {
             playRequests += queue to startIndex

@@ -48,7 +48,7 @@ class PlaybackService : MediaSessionService() {
         useAppNotificationIcon()
         val playableFormats = directPlayFormatsOf(decodableAudioCodecs())
         val sessionBuilder = MediaSession.Builder(this, buildPlayer())
-            .setCallback(TrackStreamCallback(streams, playableFormats, serviceScope))
+            .setCallback(TrackStreamCallback(streams, playableFormats, resources, serviceScope))
         openAppIntent()?.let(sessionBuilder::setSessionActivity)
         mediaSession = sessionBuilder.build()
     }

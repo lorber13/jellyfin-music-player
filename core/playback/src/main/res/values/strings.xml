@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Shown at the bottom of the screen, or by the car or another device that started playback, when none of the songs the user chose to play can be played, usually because the server didn't answer. -->
+    <string name="playback_error_nothing_playable">Couldn\'t load this music from the server.</string>
+    <!-- Shown at the bottom of the screen, or by the car or another device that started playback, when the music plays without some of the songs the user chose, because they couldn't be loaded. -->
+    <plurals name="playback_error_songs_skipped">
+        <item quantity="one">Skipped <xliff:g id="song_count" example="1">%1$d</xliff:g> song that couldn\'t be loaded from the server.</item>
+        <item quantity="other">Skipped <xliff:g id="song_count" example="3">%1$d</xliff:g> songs that couldn\'t be loaded from the server.</item>
+    </plurals>
+</resources>

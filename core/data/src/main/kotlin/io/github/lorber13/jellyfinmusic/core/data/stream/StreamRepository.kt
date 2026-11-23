@@ -4,12 +4,12 @@ package io.github.lorber13.jellyfinmusic.core.data.stream
 interface StreamRepository {
     /**
      * How to stream each of [trackIds], in the same order: the original file when its format is
-     * one of [playableFormats], otherwise a conversion by the server. Null when nobody is signed
-     * in, an id is not a track id, the server can't be reached, or it can neither send nor
-     * convert one of the tracks. The addresses hold no credentials; send [requestHeaders] with
-     * them.
+     * one of [playableFormats], otherwise a conversion by the server. An entry is null when that
+     * track can't be streamed: nobody is signed in, the id is not a track id, the server can't be
+     * reached, or it can neither send nor convert the track. The addresses hold no credentials;
+     * send [requestHeaders] with them.
      */
-    suspend fun streamsOf(trackIds: List<String>, playableFormats: List<DirectPlayFormat>): List<TrackStream>?
+    suspend fun streamsOf(trackIds: List<String>, playableFormats: List<DirectPlayFormat>): List<TrackStream?>
 
     /**
      * The headers that authorize a stream request, or none when nobody is signed in. Safe to call

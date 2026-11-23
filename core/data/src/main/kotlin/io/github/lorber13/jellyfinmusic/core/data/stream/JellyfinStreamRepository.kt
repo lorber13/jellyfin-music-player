@@ -11,6 +11,7 @@ import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.extensions.post
 import org.jellyfin.sdk.api.client.util.AuthorizationHeaderBuilder
+import org.jellyfin.sdk.model.api.PlaybackInfoDto
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
 
 private const val AUTHORIZATION_HEADER = "Authorization"
@@ -30,33 +31,34 @@ internal class JellyfinStreamRepository @Inject constructor(
     override suspend fun streamsOf(
         trackIds: List<String>,
         playableFormats: List<DirectPlayFormat>
-    ): List<TrackStream>? {
-        val client = sessionRepository.signedInClient ?: return null
-        val itemIds = trackIds.map { trackId -> trackId.toUUIDOrNull() ?: return null }
+    ): List<TrackStream?> {
+        val client = sessionRepository.signedInClient ?: return trackIds.map { null }
         val request = playbackInfoRequestOf(playableFormats)
-        val responses = try {
-            // The SDK reads responses on the calling thread. All requests run at the same time.
-            withContext(ioDispatcher) {
-                itemIds.map { itemId ->
-                    async {
-                        // The same request as the SDK's getPostedPlaybackInfo, read with the app's own model.
-                        client.post<PlaybackInfo>(
-                            pathTemplate = "/Items/{itemId}/PlaybackInfo",
-                            pathParameters = mapOf("itemId" to itemId),
-                            requestBody = request
-                        ).content
-                    }
-                }.awaitAll()
-            }
-        } catch (error: ApiClientException) {
-            return null
+        // The SDK reads responses on the calling thread. All requests run at the same time, and
+        // one that fails leaves the others running, so one bad track doesn't stop a whole album.
+        return withContext(ioDispatcher) {
+            trackIds.map { trackId -> async { streamOf(client, trackId, request) } }.awaitAll()
         }
-        return itemIds.zip(responses) { itemId, response -> trackStreamOf(client, itemId, response) ?: return null }
     }
 
     override fun requestHeaders(): Map<String, String> {
         val client = sessionRepository.signedInClient ?: return emptyMap()
         return mapOf(AUTHORIZATION_HEADER to authorizationHeaderOf(client))
+    }
+
+    private suspend fun streamOf(client: ApiClient, trackId: String, request: PlaybackInfoDto): TrackStream? {
+        val itemId = trackId.toUUIDOrNull() ?: return null
+        val response = try {
+            // The same request as the SDK's getPostedPlaybackInfo, read with the app's own model.
+            client.post<PlaybackInfo>(
+                pathTemplate = "/Items/{itemId}/PlaybackInfo",
+                pathParameters = mapOf("itemId" to itemId),
+                requestBody = request
+            ).content
+        } catch (_: ApiClientException) {
+            return null
+        }
+        return trackStreamOf(client, itemId, response)
     }
 }
 

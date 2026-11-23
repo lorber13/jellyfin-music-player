@@ -5,12 +5,15 @@ import android.content.Context
 import android.icu.text.ListFormatter
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.OptIn
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionError
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
@@ -20,6 +23,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 private const val TAG = "MusicPlayer"
 
@@ -35,6 +42,20 @@ class MediaControllerMusicPlayer @Inject internal constructor(@param:Application
     DefaultLifecycleObserver {
     // Used only on the main thread, the thread the controller runs on.
     private var controllerFuture: ListenableFuture<MediaController>? = null
+
+    // Never suspends the controller's callback: a newer message replaces one not yet collected.
+    private val errorMessageEvents =
+        MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val errorMessages: Flow<String> = errorMessageEvents.asSharedFlow()
+
+    private val controllerListener = object : MediaController.Listener {
+        // Opts in to Media3's unstable API for onError only: it is how the session reports music
+        // it couldn't play without stopping playback.
+        @OptIn(UnstableApi::class)
+        override fun onError(controller: MediaController, sessionError: SessionError) {
+            errorMessageEvents.tryEmit(sessionError.message)
+        }
+    }
 
     override fun play(queue: List<QueueItem>, startIndex: Int) {
         require(startIndex in queue.indices) { "Start index $startIndex is outside a queue of ${queue.size}" }
@@ -73,7 +94,7 @@ class MediaControllerMusicPlayer @Inject internal constructor(@param:Application
 
     private fun connect(): ListenableFuture<MediaController> {
         val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
-        return MediaController.Builder(context, sessionToken).buildAsync()
+        return MediaController.Builder(context, sessionToken).setListener(controllerListener).buildAsync()
     }
 }
 

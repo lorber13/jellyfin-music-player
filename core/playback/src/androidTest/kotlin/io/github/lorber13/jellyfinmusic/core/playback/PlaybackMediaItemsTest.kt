@@ -59,8 +59,8 @@ class PlaybackMediaItemsTest {
         val items =
             playableMediaItemsOf(listOf(itemWithId("track-1"), itemWithId("track-2")), listOf(originalFile, conversion))
 
-        assertEquals(listOf(originalFile.url, conversion.url), items.map { it.localConfiguration?.uri.toString() })
-        assertEquals(listOf("track-1", "track-2"), items.map { it.mediaId })
+        assertEquals(listOf(originalFile.url, conversion.url), items.map { it?.localConfiguration?.uri.toString() })
+        assertEquals(listOf("track-1", "track-2"), items.map { it?.mediaId })
     }
 
     @Test
@@ -68,7 +68,7 @@ class PlaybackMediaItemsTest {
         val items =
             playableMediaItemsOf(listOf(itemWithId("track-1"), itemWithId("track-2")), listOf(originalFile, conversion))
 
-        assertEquals(listOf(null, MimeTypes.APPLICATION_M3U8), items.map { it.localConfiguration?.mimeType })
+        assertEquals(listOf(null, MimeTypes.APPLICATION_M3U8), items.map { it?.localConfiguration?.mimeType })
     }
 
     @Test
@@ -78,10 +78,18 @@ class PlaybackMediaItemsTest {
             .setMimeType(MimeTypes.APPLICATION_M3U8)
             .build()
 
-        val playable = playableMediaItemsOf(listOf(item), listOf(originalFile)).single()
+        val playable = checkNotNull(playableMediaItemsOf(listOf(item), listOf(originalFile)).single())
 
         assertEquals(originalFile.url, playable.localConfiguration?.uri.toString())
         assertNull(playable.localConfiguration?.mimeType)
+    }
+
+    @Test
+    fun playableItems_withoutAStream_areNull() {
+        val items = playableMediaItemsOf(listOf(itemWithId("track-1"), itemWithId("track-2")), listOf(null, conversion))
+
+        assertNull(items[0])
+        assertEquals("track-2", items[1]?.mediaId)
     }
 
     private fun itemWithId(mediaId: String): MediaItem = MediaItem.Builder().setMediaId(mediaId).build()
