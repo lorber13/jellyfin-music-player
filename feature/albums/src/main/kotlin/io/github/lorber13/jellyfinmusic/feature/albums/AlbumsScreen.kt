@@ -49,7 +49,6 @@ import io.github.lorber13.jellyfinmusic.core.designsystem.theme.JellyfinMusicThe
 internal fun AlbumsScreen(onAlbumClick: (albumId: String) -> Unit, viewModel: AlbumsViewModel = hiltViewModel()) {
     AlbumsContent(
         uiState = viewModel.uiState,
-        sort = viewModel.sort,
         isRefreshing = viewModel.isRefreshing,
         refreshFailure = viewModel.refreshFailure,
         onSelectSort = viewModel::selectSort,
@@ -63,7 +62,6 @@ internal fun AlbumsScreen(onAlbumClick: (albumId: String) -> Unit, viewModel: Al
 @Composable
 internal fun AlbumsContent(
     uiState: AlbumsUiState,
-    sort: AlbumSort,
     isRefreshing: Boolean,
     refreshFailure: LibraryFailure?,
     onSelectSort: (AlbumSortField) -> Unit,
@@ -82,7 +80,7 @@ internal fun AlbumsContent(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.feature_albums_title)) },
-                actions = { AlbumSortMenu(sort = sort, onSelectSort = onSelectSort) },
+                actions = { AlbumSortMenu(sort = uiState.sort, onSelectSort = onSelectSort) },
                 scrollBehavior = scrollBehavior
             )
         },
@@ -90,7 +88,7 @@ internal fun AlbumsContent(
     ) { contentPadding ->
         val contentModifier = Modifier.fillMaxSize().padding(contentPadding)
         when (uiState) {
-            AlbumsUiState.Loading -> Box(modifier = contentModifier, contentAlignment = Alignment.Center) {
+            is AlbumsUiState.Loading -> Box(modifier = contentModifier, contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
 
@@ -218,7 +216,6 @@ private fun AlbumsContentPreview() {
     JellyfinMusicTheme {
         AlbumsContent(
             uiState = AlbumsUiState.Loaded(albums, AlbumSort.DEFAULT),
-            sort = AlbumSort.DEFAULT,
             isRefreshing = false,
             refreshFailure = null,
             onSelectSort = {},

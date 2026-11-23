@@ -56,10 +56,10 @@ class AlbumsViewModelTest {
         albumRepository.result = AlbumsResult.Success(albums)
 
         val viewModel = AlbumsViewModel(albumRepository, preferences)
-        assertEquals(AlbumsUiState.Loading, viewModel.uiState)
+        assertEquals(AlbumsUiState.Loading(AlbumSort.DEFAULT), viewModel.uiState)
         runCurrent()
 
-        assertEquals(yearNewestFirst, viewModel.sort)
+        assertEquals(yearNewestFirst, viewModel.uiState.sort)
         assertEquals(listOf(yearNewestFirst), albumRepository.requestedSorts)
         assertEquals(AlbumsUiState.Loaded(albums, yearNewestFirst), viewModel.uiState)
     }
@@ -71,7 +71,7 @@ class AlbumsViewModelTest {
         viewModel.selectSort(AlbumSortField.YEAR)
         runCurrent()
 
-        assertEquals(yearNewestFirst, viewModel.sort)
+        assertEquals(yearNewestFirst, viewModel.uiState.sort)
         assertEquals(yearNewestFirst, albumRepository.requestedSorts.last())
         assertEquals(AlbumsUiState.Loaded(albums, yearNewestFirst), viewModel.uiState)
         assertEquals(yearNewestFirst, preferences.storedSort.value)
@@ -85,7 +85,7 @@ class AlbumsViewModelTest {
         runCurrent()
 
         val nameZToA = AlbumSort(AlbumSortField.NAME, SortDirection.DESCENDING)
-        assertEquals(nameZToA, viewModel.sort)
+        assertEquals(nameZToA, viewModel.uiState.sort)
         assertEquals(nameZToA, preferences.storedSort.value)
     }
 
@@ -100,12 +100,45 @@ class AlbumsViewModelTest {
 
         assertEquals(true, viewModel.isRefreshing)
         assertEquals(AlbumsUiState.Loaded(albums, AlbumSort.DEFAULT), viewModel.uiState)
+        assertEquals(AlbumSort.DEFAULT, preferences.storedSort.value)
 
         pending.complete(AlbumsResult.Success(albums.reversed()))
         advanceUntilIdle()
 
         assertEquals(false, viewModel.isRefreshing)
         assertEquals(AlbumsUiState.Loaded(albums.reversed(), yearNewestFirst), viewModel.uiState)
+        assertEquals(yearNewestFirst, preferences.storedSort.value)
+    }
+
+    @Test
+    fun newSortThatFailsToLoad_keepsTheShownOrderAndIsNotRemembered() = runTest(dispatcher) {
+        val viewModel = loadedViewModel()
+        albumRepository.result = AlbumsResult.Failed(LibraryFailure.UNREACHABLE)
+
+        viewModel.selectSort(AlbumSortField.YEAR)
+        advanceUntilIdle()
+
+        assertEquals(AlbumsUiState.Loaded(albums, AlbumSort.DEFAULT), viewModel.uiState)
+        assertEquals(LibraryFailure.UNREACHABLE, viewModel.refreshFailure)
+        assertEquals(AlbumSort.DEFAULT, preferences.storedSort.value)
+    }
+
+    @Test
+    fun newSortWithNoAlbumsShown_isRetriedInThatSort() = runTest(dispatcher) {
+        albumRepository.result = AlbumsResult.Failed(LibraryFailure.UNREACHABLE)
+        val viewModel = AlbumsViewModel(albumRepository, preferences)
+        runCurrent()
+
+        viewModel.selectSort(AlbumSortField.YEAR)
+        runCurrent()
+        assertEquals(AlbumsUiState.Failed(LibraryFailure.UNREACHABLE, yearNewestFirst), viewModel.uiState)
+        albumRepository.result = AlbumsResult.Success(albums)
+        viewModel.reload()
+        runCurrent()
+
+        assertEquals(AlbumsUiState.Loaded(albums, yearNewestFirst), viewModel.uiState)
+        assertEquals(yearNewestFirst, albumRepository.requestedSorts.last())
+        assertEquals(yearNewestFirst, preferences.storedSort.value)
     }
 
     @Test
@@ -143,7 +176,7 @@ class AlbumsViewModelTest {
         val viewModel = AlbumsViewModel(albumRepository, preferences)
         runCurrent()
 
-        assertEquals(AlbumsUiState.Failed(LibraryFailure.UNREACHABLE), viewModel.uiState)
+        assertEquals(AlbumsUiState.Failed(LibraryFailure.UNREACHABLE, AlbumSort.DEFAULT), viewModel.uiState)
     }
 
     @Test
@@ -156,7 +189,7 @@ class AlbumsViewModelTest {
 
         viewModel.reload()
         runCurrent()
-        assertEquals(AlbumsUiState.Loading, viewModel.uiState)
+        assertEquals(AlbumsUiState.Loading(AlbumSort.DEFAULT), viewModel.uiState)
         pending.complete(AlbumsResult.Success(albums))
         runCurrent()
 

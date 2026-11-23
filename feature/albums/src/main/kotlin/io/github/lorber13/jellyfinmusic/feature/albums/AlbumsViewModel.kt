@@ -28,14 +28,20 @@ import kotlinx.coroutines.launch
 private val minimumRefreshIndicatorTime = 500.milliseconds
 
 internal sealed interface AlbumsUiState {
+    /**
+     * The order the sort menu shows: that of the albums on screen, or with none on screen, the one
+     * loading. A sort picked while albums are on screen only replaces theirs once its albums have
+     * loaded, so the menu never shows an order the grid isn't in.
+     */
+    val sort: AlbumSort
+
     /** Loading with nothing to show yet. */
-    data object Loading : AlbumsUiState
+    data class Loading(override val sort: AlbumSort) : AlbumsUiState
 
-    /** [albums] are in the order of [sort], which lags behind a newly picked sort until it has loaded. */
-    data class Loaded(val albums: List<Album>, val sort: AlbumSort) : AlbumsUiState
+    data class Loaded(val albums: List<Album>, override val sort: AlbumSort) : AlbumsUiState
 
-    /** Loading failed with nothing to show. */
-    data class Failed(val reason: LibraryFailure) : AlbumsUiState
+    /** Loading failed with nothing to show. [sort] is the one that failed, so Retry uses it again. */
+    data class Failed(val reason: LibraryFailure, override val sort: AlbumSort) : AlbumsUiState
 }
 
 @HiltViewModel
@@ -43,11 +49,7 @@ internal class AlbumsViewModel @Inject constructor(
     private val albumRepository: AlbumRepository,
     private val libraryPreferences: LibraryPreferencesRepository
 ) : ViewModel() {
-    var uiState: AlbumsUiState by mutableStateOf(AlbumsUiState.Loading)
-        private set
-
-    /** The sort the user picked. */
-    var sort: AlbumSort by mutableStateOf(AlbumSort.DEFAULT)
+    var uiState: AlbumsUiState by mutableStateOf(AlbumsUiState.Loading(AlbumSort.DEFAULT))
         private set
 
     /** Whether the albums on screen are being reloaded, after a pull to refresh or a new sort. */
@@ -62,49 +64,60 @@ internal class AlbumsViewModel @Inject constructor(
 
     init {
         loadJob = viewModelScope.launch {
-            sort = libraryPreferences.albumSort.first()
-            loadAlbums()
+            loadAlbums(libraryPreferences.albumSort.first())
         }
     }
 
     /** Sorts by [field] in its natural direction, or reverses the direction if [field] is already selected. */
     fun selectSort(field: AlbumSortField) {
-        val newSort = if (field == sort.field) {
-            sort.copy(direction = sort.direction.reversed())
+        val currentSort = uiState.sort
+        val newSort = if (field == currentSort.field) {
+            currentSort.copy(direction = currentSort.direction.reversed())
         } else {
             AlbumSort(field, field.naturalDirection)
         }
-        sort = newSort
-        reload()
-        // Saved alongside the reload rather than before it, so the new order shows even if saving fails.
-        viewModelScope.launch { libraryPreferences.setAlbumSort(newSort) }
+        load(newSort)
     }
 
     /** Loads the albums again, replacing a load that is still running. */
     fun reload() {
-        loadJob?.cancel()
-        loadJob = viewModelScope.launch { loadAlbums() }
+        load(uiState.sort)
     }
 
     fun onRefreshFailureShown() {
         refreshFailure = null
     }
 
+    private fun load(sort: AlbumSort) {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch { loadAlbums(sort) }
+    }
+
     // No `finally` resets isRefreshing: a load is only cancelled by the next one, which sets it itself.
-    private suspend fun loadAlbums() {
-        val sortToLoad = sort
-        // Albums already on screen stay there while the new ones load.
+    private suspend fun loadAlbums(sort: AlbumSort) {
+        // Albums already on screen stay there, in their order, while the new ones load.
         val hasAlbums = uiState is AlbumsUiState.Loaded
-        if (hasAlbums) isRefreshing = true else uiState = AlbumsUiState.Loading
+        if (hasAlbums) isRefreshing = true else uiState = AlbumsUiState.Loading(sort)
 
         coroutineScope {
             val indicatorTimer = if (hasAlbums) launch { delay(minimumRefreshIndicatorTime) } else null
             // The result shows as soon as it arrives; only the indicator waits for the timer.
-            when (val result = albumRepository.getAlbums(sortToLoad)) {
-                is AlbumsResult.Success -> uiState = AlbumsUiState.Loaded(result.albums, sortToLoad)
+            when (val result = albumRepository.getAlbums(sort)) {
+                is AlbumsResult.Success -> {
+                    uiState = AlbumsUiState.Loaded(result.albums, sort)
+                    // Remembered only once the albums show in it, so the next launch opens in the order
+                    // the user last saw (DataStore skips the write if it hasn't changed). In its own
+                    // coroutine, so the next reload doesn't cancel it.
+                    viewModelScope.launch { libraryPreferences.setAlbumSort(sort) }
+                }
 
                 is AlbumsResult.Failed ->
-                    if (hasAlbums) refreshFailure = result.reason else uiState = AlbumsUiState.Failed(result.reason)
+                    if (hasAlbums) {
+                        refreshFailure = result.reason
+                    } else {
+                        uiState =
+                            AlbumsUiState.Failed(result.reason, sort)
+                    }
             }
             indicatorTimer?.join()
         }

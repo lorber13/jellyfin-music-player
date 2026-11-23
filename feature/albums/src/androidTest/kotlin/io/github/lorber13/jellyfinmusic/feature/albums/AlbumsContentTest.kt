@@ -52,7 +52,7 @@ class AlbumsContentTest {
 
     @Test
     fun sortMenu_marksTheSelectedOptionAndItsDirection() {
-        showContent(sort = AlbumSort(AlbumSortField.YEAR, SortDirection.DESCENDING))
+        showContent(uiState = AlbumsUiState.Loaded(albums, AlbumSort(AlbumSortField.YEAR, SortDirection.DESCENDING)))
 
         composeRule.onNode(hasContentDescription(string(R.string.feature_albums_sort))).performClick()
 
@@ -87,7 +87,9 @@ class AlbumsContentTest {
     @Test
     fun unreachableServer_showsTheErrorAndTriesAgain() {
         var reloads = 0
-        showContent(uiState = AlbumsUiState.Failed(LibraryFailure.UNREACHABLE), onReload = { reloads++ })
+        showContent(uiState = AlbumsUiState.Failed(LibraryFailure.UNREACHABLE, AlbumSort.DEFAULT), onReload = {
+            reloads++
+        })
 
         composeRule.onNode(hasText(string(R.string.feature_albums_error_unreachable))).assertExists()
         composeRule.onNode(hasText(string(R.string.feature_albums_retry)) and hasClickAction()).performClick()
@@ -113,7 +115,6 @@ class AlbumsContentTest {
 
     private fun showContent(
         uiState: AlbumsUiState = AlbumsUiState.Loaded(albums, AlbumSort.DEFAULT),
-        sort: AlbumSort = AlbumSort.DEFAULT,
         refreshFailure: LibraryFailure? = null,
         onSelectSort: (AlbumSortField) -> Unit = {},
         onReload: () -> Unit = {},
@@ -124,7 +125,6 @@ class AlbumsContentTest {
             JellyfinMusicTheme {
                 AlbumsContent(
                     uiState = uiState,
-                    sort = sort,
                     isRefreshing = false,
                     refreshFailure = refreshFailure,
                     onSelectSort = onSelectSort,
