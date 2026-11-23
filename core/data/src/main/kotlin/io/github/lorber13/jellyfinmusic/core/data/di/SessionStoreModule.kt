@@ -7,11 +7,6 @@ import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStoreFile
 import androidx.datastore.tink.AeadSerializer
 import com.google.crypto.tink.Aead
-import com.google.crypto.tink.KeyTemplate
-import com.google.crypto.tink.RegistryConfiguration
-import com.google.crypto.tink.aead.AeadConfig
-import com.google.crypto.tink.aead.PredefinedAeadParameters
-import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import com.google.crypto.tink.integration.android.AndroidKeystore
 import dagger.Module
 import dagger.Provides
@@ -20,7 +15,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.lorber13.jellyfinmusic.core.data.session.StoredSession
 import io.github.lorber13.jellyfinmusic.core.data.session.StoredSessionSerializer
-import java.io.IOException
 import java.security.GeneralSecurityException
 import java.security.ProviderException
 import javax.inject.Singleton
@@ -35,12 +29,10 @@ import kotlinx.coroutines.SupervisorJob
 @InstallIn(SingletonComponent::class)
 internal object SessionStoreModule {
     private const val SESSION_FILE_NAME = "session.json"
-    private const val KEYSET_NAME = "session_keyset"
-    private const val KEYSET_PREFERENCES_FILE = "session_keyset_prefs"
 
-    // The Keystore key that encrypts the Tink keyset. It never leaves the device's secure hardware.
-    private const val MASTER_KEY_ALIAS = "session_master_key"
-    private const val MASTER_KEY_URI = "android-keystore://$MASTER_KEY_ALIAS"
+    // The Android Keystore key that encrypts the session file. It never leaves the device's
+    // secure hardware.
+    private const val SESSION_KEY_ALIAS = "session_key"
 
     @Provides
     @Singleton
@@ -62,39 +54,35 @@ internal object SessionStoreModule {
             .build()
     }
 
-    private fun sessionAead(context: Context): Aead {
-        AeadConfig.register()
+    /**
+     * Encrypts with the Keystore key directly, as Tink's documentation recommends over a Tink
+     * keyset that a Keystore key encrypts, and as the deprecation of Jetpack Security points to.
+     */
+    private fun sessionAead(context: Context): Aead =
         // Tink passes on the Keystore's ProviderException as it is, next to the exceptions it declares.
-        val keysetManager = try {
-            sessionKeysetManager(context)
+        try {
+            sessionKeyAead()
         } catch (_: GeneralSecurityException) {
-            sessionKeysetManagerAfterReset(context)
-        } catch (_: IOException) {
-            sessionKeysetManagerAfterReset(context)
+            sessionAeadAfterReset(context)
         } catch (_: ProviderException) {
-            sessionKeysetManagerAfterReset(context)
+            sessionAeadAfterReset(context)
         }
-        return keysetManager.keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
+
+    /** The session key, created the first time. */
+    private fun sessionKeyAead(): Aead {
+        if (!AndroidKeystore.hasKey(SESSION_KEY_ALIAS)) AndroidKeystore.generateNewAes256GcmKey(SESSION_KEY_ALIAS)
+        return AndroidKeystore.getAead(SESSION_KEY_ALIAS)
     }
 
-    private fun sessionKeysetManager(context: Context): AndroidKeysetManager = AndroidKeysetManager.Builder()
-        .withSharedPref(context, KEYSET_NAME, KEYSET_PREFERENCES_FILE)
-        .withKeyTemplate(KeyTemplate.createFrom(PredefinedAeadParameters.AES256_GCM))
-        .withMasterKeyUri(MASTER_KEY_URI)
-        .build()
-
     /**
-     * Tink's documentation calls a keyset it can't read an irrecoverable error and says to delete
-     * it and the data encrypted with it, here only the session. The master key goes too: Tink
-     * won't replace a key that exists but fails, so without this the user would sign in again on
-     * every launch. If the new key fails as well, the error reaches [SessionStore], which treats
-     * it as signed out.
+     * A key that can't be loaded can't be repaired, and what it encrypted can't be read any more,
+     * so both go and the user signs in again. Without this, the user would sign in again on every
+     * launch. If the new key fails as well, the error reaches [SessionStore], which treats it as
+     * signed out.
      */
-    private fun sessionKeysetManagerAfterReset(context: Context): AndroidKeysetManager {
-        // The file holds only this keyset.
-        context.deleteSharedPreferences(KEYSET_PREFERENCES_FILE)
+    private fun sessionAeadAfterReset(context: Context): Aead {
         context.dataStoreFile(SESSION_FILE_NAME).delete()
-        AndroidKeystore.deleteKey(MASTER_KEY_ALIAS)
-        return sessionKeysetManager(context)
+        AndroidKeystore.deleteKey(SESSION_KEY_ALIAS)
+        return sessionKeyAead()
     }
 }
