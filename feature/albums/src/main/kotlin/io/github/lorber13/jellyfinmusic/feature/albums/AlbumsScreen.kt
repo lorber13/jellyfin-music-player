@@ -134,7 +134,11 @@ private fun AlbumGrid(albums: List<Album>, sort: AlbumSort, onAlbumClick: (album
     // A new grid for every order: a new sort starts at the top, while coming back from an album
     // keeps the position. Keyed by the names, which unlike enum hash codes stay the same when the
     // saved scroll position is restored in a new process.
-    key("${sort.field.name}-${sort.direction.name}") {
+    // Also a new grid when a refresh changes the first album: the grid keeps its first visible album
+    // in place when albums are added before it, so albums added at the top would stay hidden above
+    // it. The first album's id is enough, and unlike the whole list it is cheap to compare in a
+    // large library.
+    key("${sort.field.name}-${sort.direction.name}-${albums.firstOrNull()?.id}") {
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 160.dp),
             modifier = Modifier.fillMaxSize(),

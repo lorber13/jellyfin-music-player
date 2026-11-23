@@ -1,8 +1,11 @@
 package io.github.lorber13.jellyfinmusic.feature.albums
 
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
@@ -108,6 +111,21 @@ class AlbumsContentTest {
         composeRule.waitUntil(timeoutMillis = 10_000) { shown }
     }
 
+    // The grid keeps its first visible album in place when albums are added before it, which would
+    // leave the albums a refresh adds at the top hidden above it.
+    @Test
+    fun refreshAddingAlbumsAtTheTop_showsThem() {
+        val newestFirst = AlbumSort(AlbumSortField.DATE_ADDED, SortDirection.DESCENDING)
+        val olderAlbums = (1..20).map(::album)
+        val shownState = showContent(uiState = AlbumsUiState.Loaded(olderAlbums, newestFirst))
+
+        // Three, so the previous first album moves to the second line whether the grid has two or three columns.
+        val newAlbums = (21..23).map(::album)
+        shownState.value = AlbumsUiState.Loaded(newAlbums + olderAlbums, newestFirst)
+
+        composeRule.onNode(hasText("Album 21")).assertIsDisplayed()
+    }
+
     private fun menuItem(label: Int): SemanticsMatcher = hasText(string(label)) and hasClickAction()
 
     private fun isSelected(selected: Boolean): SemanticsMatcher =
@@ -120,11 +138,12 @@ class AlbumsContentTest {
         onReload: () -> Unit = {},
         onRefreshFailureShown: () -> Unit = {},
         onAlbumClick: (String) -> Unit = {}
-    ) {
+    ): MutableState<AlbumsUiState> {
+        val shownState = mutableStateOf(uiState)
         composeRule.setContent {
             JellyfinMusicTheme {
                 AlbumsContent(
-                    uiState = uiState,
+                    uiState = shownState.value,
                     isRefreshing = false,
                     refreshFailure = refreshFailure,
                     onSelectSort = onSelectSort,
@@ -134,7 +153,12 @@ class AlbumsContentTest {
                 )
             }
         }
+        // Changing it shows the new state, as a refresh does.
+        return shownState
     }
+
+    private fun album(number: Int) =
+        Album(id = "$number", name = "Album $number", artistName = "Artist $number", coverImageUrl = null)
 
     private fun string(resource: Int): String = composeRule.activity.getString(resource)
 }
