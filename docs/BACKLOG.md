@@ -9,7 +9,7 @@ Built from [FEATURES.md](FEATURES.md). Feature items keep their spec IDs. **TECH
 | Milestone | Goal | Items |
 |---|---|---|
 | [M1 Foundation](#m1--foundation-log-in-and-stream) | Log in and stream an album | 16 |
-| [M2 Player complete](#m2--library--player-complete) | Daily-driver online player | 24 |
+| [M2 Player complete](#m2--library--player-complete) | Daily-driver online player | 25 |
 | [M3 Android Auto](#m3--android-auto) | Full car experience (online) | 11 |
 | [M4 Offline](#m4--offline) | Works without a connection, on the phone and in the car | 17 |
 | [M5 Public release](#m5--public-release) | Ready for Play + F-Droid | 14 |
@@ -53,6 +53,7 @@ Done when: the whole library can be browsed and played online, with a full playe
 | LIB-09 | Search | M |
 | LIB-10 | Favorites (mark, unmark, sync) | M |
 | LIB-12 | Smooth browsing for 10,000+ album libraries | L |
+| TECH-08 | Look up each track's stream just before it plays | L |
 | PLY-02 | Shuffle album, playlist, artist or whole library | S |
 | PLY-03 | Play next / Add to queue | S |
 | PLY-04 | Queue screen: view, reorder, remove, clear | M |
