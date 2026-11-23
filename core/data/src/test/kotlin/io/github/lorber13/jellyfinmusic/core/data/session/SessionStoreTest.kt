@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import dagger.Lazy
 import java.io.IOException
 import java.security.GeneralSecurityException
+import java.security.ProviderException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -53,6 +54,13 @@ class SessionStoreTest {
     }
 
     @Test
+    fun read_whenTheKeystoreThrowsAProviderException_returnsNull() = runTest(dispatcher) {
+        val store = SessionStore(Lazy { throw ProviderException("Keystore operation failed") }, dispatcher)
+
+        assertNull(store.read())
+    }
+
+    @Test
     fun save_replacesTheStoredSession() = runTest(dispatcher) {
         dataStore.value = session.copy(userId = "2")
 
@@ -68,6 +76,13 @@ class SessionStoreTest {
         store().save(session)
 
         assertNull(dataStore.value)
+    }
+
+    @Test
+    fun save_whenTheKeystoreThrowsAProviderException_doesNotThrow() = runTest(dispatcher) {
+        val store = SessionStore(Lazy { throw ProviderException("Keystore operation failed") }, dispatcher)
+
+        store.save(session)
     }
 
     private fun store() = SessionStore(Lazy { dataStore }, dispatcher)

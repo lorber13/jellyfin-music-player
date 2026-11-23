@@ -5,6 +5,7 @@ import dagger.Lazy
 import io.github.lorber13.jellyfinmusic.core.data.di.IoDispatcher
 import java.io.IOException
 import java.security.GeneralSecurityException
+import java.security.ProviderException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -13,7 +14,8 @@ import kotlinx.coroutines.withContext
 
 /**
  * Keeps the signed-in session in an encrypted file on the device. A file that can't be read or
- * written only costs the user a sign-in, so failures are not passed on.
+ * written only costs the user a sign-in, so failures are not passed on. That includes the
+ * Keystore's unchecked ProviderException, which Tink passes on as it is.
  */
 @Singleton
 internal class SessionStore @Inject constructor(
@@ -29,6 +31,8 @@ internal class SessionStore @Inject constructor(
             null
         } catch (_: GeneralSecurityException) {
             null
+        } catch (_: ProviderException) {
+            null
         }
     }
 
@@ -39,6 +43,7 @@ internal class SessionStore @Inject constructor(
                 dataStore.get().updateData { session }
             } catch (_: IOException) {
             } catch (_: GeneralSecurityException) {
+            } catch (_: ProviderException) {
             }
         }
     }

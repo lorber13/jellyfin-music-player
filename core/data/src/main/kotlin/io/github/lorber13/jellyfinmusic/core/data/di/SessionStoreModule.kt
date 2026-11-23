@@ -12,6 +12,7 @@ import com.google.crypto.tink.RegistryConfiguration
 import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.aead.PredefinedAeadParameters
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
+import com.google.crypto.tink.integration.android.AndroidKeystore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,6 +20,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.lorber13.jellyfinmusic.core.data.session.StoredSession
 import io.github.lorber13.jellyfinmusic.core.data.session.StoredSessionSerializer
+import java.io.IOException
+import java.security.GeneralSecurityException
+import java.security.ProviderException
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
@@ -35,7 +39,8 @@ internal object SessionStoreModule {
     private const val KEYSET_PREFERENCES_FILE = "session_keyset_prefs"
 
     // The Keystore key that encrypts the Tink keyset. It never leaves the device's secure hardware.
-    private const val MASTER_KEY_URI = "android-keystore://session_master_key"
+    private const val MASTER_KEY_ALIAS = "session_master_key"
+    private const val MASTER_KEY_URI = "android-keystore://$MASTER_KEY_ALIAS"
 
     @Provides
     @Singleton
@@ -59,12 +64,37 @@ internal object SessionStoreModule {
 
     private fun sessionAead(context: Context): Aead {
         AeadConfig.register()
-        val keysetHandle = AndroidKeysetManager.Builder()
-            .withSharedPref(context, KEYSET_NAME, KEYSET_PREFERENCES_FILE)
-            .withKeyTemplate(KeyTemplate.createFrom(PredefinedAeadParameters.AES256_GCM))
-            .withMasterKeyUri(MASTER_KEY_URI)
-            .build()
-            .keysetHandle
-        return keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
+        // Tink passes on the Keystore's ProviderException as it is, next to the exceptions it declares.
+        val keysetManager = try {
+            sessionKeysetManager(context)
+        } catch (_: GeneralSecurityException) {
+            sessionKeysetManagerAfterReset(context)
+        } catch (_: IOException) {
+            sessionKeysetManagerAfterReset(context)
+        } catch (_: ProviderException) {
+            sessionKeysetManagerAfterReset(context)
+        }
+        return keysetManager.keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
+    }
+
+    private fun sessionKeysetManager(context: Context): AndroidKeysetManager = AndroidKeysetManager.Builder()
+        .withSharedPref(context, KEYSET_NAME, KEYSET_PREFERENCES_FILE)
+        .withKeyTemplate(KeyTemplate.createFrom(PredefinedAeadParameters.AES256_GCM))
+        .withMasterKeyUri(MASTER_KEY_URI)
+        .build()
+
+    /**
+     * Tink's documentation calls a keyset it can't read an irrecoverable error and says to delete
+     * it and the data encrypted with it, here only the session. The master key goes too: Tink
+     * won't replace a key that exists but fails, so without this the user would sign in again on
+     * every launch. If the new key fails as well, the error reaches [SessionStore], which treats
+     * it as signed out.
+     */
+    private fun sessionKeysetManagerAfterReset(context: Context): AndroidKeysetManager {
+        // The file holds only this keyset.
+        context.deleteSharedPreferences(KEYSET_PREFERENCES_FILE)
+        context.dataStoreFile(SESSION_FILE_NAME).delete()
+        AndroidKeystore.deleteKey(MASTER_KEY_ALIAS)
+        return sessionKeysetManager(context)
     }
 }
