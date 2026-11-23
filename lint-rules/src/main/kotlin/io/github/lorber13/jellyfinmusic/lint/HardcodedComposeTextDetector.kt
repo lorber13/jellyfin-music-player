@@ -9,9 +9,11 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMember
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULiteralExpression
@@ -21,6 +23,7 @@ import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.skipParenthesizedExprDown
+import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.tryResolve
 
 /**
@@ -103,18 +106,37 @@ class HardcodedComposeTextDetector :
             else -> emptyList()
         }
 
-    /** True inside a function annotated with `@Preview` or with a multi-preview annotation. */
+    /** True inside a function annotated with `@Preview` or with a multipreview annotation. */
     private fun isInPreview(element: UElement): Boolean {
         val function = element.getParentOfType<UMethod>() ?: return false
         return function.uAnnotations.any { annotation ->
-            annotation.qualifiedName == PREVIEW_ANNOTATION ||
-                annotation.resolve()?.hasAnnotation(PREVIEW_ANNOTATION) == true
+            annotation.qualifiedName in PREVIEW_ANNOTATIONS ||
+                annotation.resolve()?.let { isMultipreview(it, depth = 1) } == true
+        }
+    }
+
+    /**
+     * A multipreview is an annotation class that carries `@Preview`, either itself or through
+     * another multipreview. Compiled ones, such as `@PreviewLightDark`, carry their `@Preview`s
+     * wrapped in the `Preview.Container` that Kotlin generates for repeated annotations. The depth
+     * limit, as in Slack's compose-lints, stops annotation classes that annotate each other.
+     */
+    private fun isMultipreview(annotationClass: PsiClass, depth: Int): Boolean {
+        if (depth > MAX_MULTIPREVIEW_DEPTH) return false
+        // Through UAST, as in Slack's compose-lints: reading the PSI annotations instead missed a
+        // multipreview declared in Kotlin source that carries another one.
+        val annotations = annotationClass.toUElementOfType<UClass>()?.uAnnotations ?: return false
+        return annotations.any { annotation ->
+            annotation.qualifiedName in PREVIEW_ANNOTATIONS ||
+                annotation.resolve()?.let { isMultipreview(it, depth + 1) } == true
         }
     }
 
     companion object {
         private const val COMPOSABLE_ANNOTATION = "androidx.compose.runtime.Composable"
         private const val PREVIEW_ANNOTATION = "androidx.compose.ui.tooling.preview.Preview"
+        private val PREVIEW_ANNOTATIONS = setOf(PREVIEW_ANNOTATION, "$PREVIEW_ANNOTATION.Container")
+        private const val MAX_MULTIPREVIEW_DEPTH = 4
         private const val SEMANTICS_PACKAGE = "androidx.compose.ui.semantics"
 
         private val TEXT_TYPES = setOf(

@@ -92,6 +92,28 @@ class HardcodedComposeTextDetectorTest {
     }
 
     @Test
+    fun libraryAndNestedMultipreviews_areClean() {
+        lintScreen(
+            """
+            @androidx.compose.ui.tooling.preview.PreviewLightDark
+            @Composable
+            fun LightDarkScreenPreview() {
+                Text("Play")
+            }
+
+            @androidx.compose.ui.tooling.preview.PreviewLightDark
+            annotation class ScreenPreviews
+
+            @ScreenPreviews
+            @Composable
+            fun NestedScreenPreview() {
+                Text("Play")
+            }
+            """
+        ).expectClean()
+    }
+
+    @Test
     fun nonComposableFunction_isClean() {
         lintScreen(
             """
@@ -163,7 +185,13 @@ class HardcodedComposeTextDetectorTest {
             """
             package androidx.compose.ui.tooling.preview
 
-            annotation class Preview
+            annotation class Preview(val name: String = "") {
+                annotation class Container(val value: Array<Preview>)
+            }
+
+            // As the compiled library has it: Kotlin wraps the repeated @Preview in its container.
+            @Preview.Container([Preview(name = "Light"), Preview(name = "Dark")])
+            annotation class PreviewLightDark
             """
         ).indented(),
         kotlin(
