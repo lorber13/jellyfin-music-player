@@ -31,6 +31,28 @@ class PickServerTest {
     }
 
     @Test
+    fun slowHttps_winsOverFastHttp() {
+        val results = listOf(
+            answered("https://music.example.com:8096", RecommendedServerInfoScore.GOOD, name = "Slow HTTPS"),
+            answered("http://music.example.com:8096", RecommendedServerInfoScore.GREAT, name = "Fast HTTP")
+        )
+
+        val expected = JellyfinServer("https://music.example.com:8096", "Slow HTTPS", "12.4.0")
+        assertEquals(ServerLookupResult.Found(expected), pickServer(results))
+    }
+
+    @Test
+    fun withoutWorkingHttps_usesHttp() {
+        val results = listOf(
+            unreachable("https://192.168.1.10:8920"),
+            answered("http://192.168.1.10:8096", RecommendedServerInfoScore.GOOD, name = "Home")
+        )
+
+        val expected = JellyfinServer("http://192.168.1.10:8096", "Home", "12.4.0")
+        assertEquals(ServerLookupResult.Found(expected), pickServer(results))
+    }
+
+    @Test
     fun serverOlderThanTheMinimumVersion_isAnUnsupportedVersion() {
         val tooOld = answered("http://old.example.com:8096", RecommendedServerInfoScore.OK, version = "10.8.13")
             .copy(issues = listOf(RecommendedServerIssue.UnsupportedServerVersion(ServerVersion(10, 8, 13))))

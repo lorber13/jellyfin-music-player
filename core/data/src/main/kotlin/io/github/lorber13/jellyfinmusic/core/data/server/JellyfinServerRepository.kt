@@ -57,20 +57,23 @@ internal class JellyfinServerRepository @Inject constructor(
 private val acceptedScores = listOf(RecommendedServerInfoScore.GREAT, RecommendedServerInfoScore.GOOD)
 
 /**
- * Picks the server to use from the SDK's results for every address candidate. The results come
- * in candidate order, which the SDK sorts most secure first, so within the same score the first
- * result wins.
+ * Picks the server to use from the SDK's results for every address candidate. The SDK suggests
+ * the first GREAT result, otherwise the first GOOD one, but a slow answer only gets GOOD. A slow
+ * HTTPS answer would then lose to a fast plain HTTP one, which sends the password unencrypted,
+ * so any working HTTPS address wins over HTTP. The results come in candidate order, which the SDK
+ * sorts most secure first, so within the same score the first result wins.
  */
 internal fun pickServer(results: List<RecommendedServerInfo>): ServerLookupResult {
     if (results.isEmpty()) return ServerLookupResult.Failed(ServerLookupFailure.InvalidAddress)
 
-    for (score in acceptedScores) {
-        val result = results.firstOrNull { it.score == score } ?: continue
-        val systemInfo = result.systemInfo.getOrNull() ?: continue
+    val accepted = results.filter { it.score in acceptedScores && it.systemInfo.isSuccess }
+    val chosen = bestScoredOf(accepted.filter(::usesHttps)) ?: bestScoredOf(accepted)
+    if (chosen != null) {
+        val systemInfo = chosen.systemInfo.getOrThrow()
         val server = JellyfinServer(
-            address = result.address,
+            address = chosen.address,
             // A server name is optional in Jellyfin; the address still tells the user which server it is.
-            name = systemInfo.serverName?.takeIf { it.isNotBlank() } ?: result.address,
+            name = systemInfo.serverName?.takeIf { it.isNotBlank() } ?: chosen.address,
             version = systemInfo.version.orEmpty()
         )
         return ServerLookupResult.Found(server)
@@ -78,6 +81,12 @@ internal fun pickServer(results: List<RecommendedServerInfo>): ServerLookupResul
     unsupportedVersionOf(results)?.let { return ServerLookupResult.Failed(it) }
     return ServerLookupResult.Failed(mostHelpfulFailure(results.map(::failureOf)))
 }
+
+/** The first result with the best of the [acceptedScores], or null if there is none. */
+private fun bestScoredOf(results: List<RecommendedServerInfo>): RecommendedServerInfo? =
+    acceptedScores.firstNotNullOfOrNull { score -> results.firstOrNull { it.score == score } }
+
+private fun usesHttps(result: RecommendedServerInfo): Boolean = result.address.startsWith("https://", ignoreCase = true)
 
 /**
  * The failure for a Jellyfin server that answered but is older than the app supports. This is
