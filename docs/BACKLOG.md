@@ -44,14 +44,13 @@ Done when: the whole library can be browsed and played online, with a full playe
 
 | ID | Item | Size |
 |---|---|---|
-| LIB-01 | Home screen (recently played, recently added, favorites) | M |
 | LIB-02 | Artists list with A–Z scrolling | M |
 | LIB-04 | Playlists list | S |
 | LIB-05 | Genres list and genre detail | M |
 | LIB-06 | Artist detail (albums, top tracks) | M |
 | LIB-08 | Playlist detail | S |
 | LIB-09 | Search | M |
-| LIB-10 | Favorites (mark, unmark, sync) | M |
+| LIB-10 | Favorites (mark, unmark, sync, favorites filter) | M |
 | LIB-12 | Smooth browsing for 10,000+ album libraries | L |
 | TECH-08 | Look up each track's stream just before it plays | L |
 | LIB-13 | Tracks list; tapping a track plays the rest of the list | L |
@@ -66,6 +65,7 @@ Done when: the whole library can be browsed and played online, with a full playe
 | PLY-11 | Resume queue and position after app close or reboot | M |
 | PLY-12 | Gapless playback | S |
 | PLY-15 | Play history sync to Jellyfin | M |
+| LIB-14 | Recently played sort for albums and tracks | M |
 | ACC-05 | Log out | M |
 | ACC-06 | Session-expired handling | M |
 | SET-01 | Streaming quality limits (Wi-Fi / mobile data) | S |
@@ -103,7 +103,7 @@ Done when: a pinned album plays in airplane mode on the phone and in the car (wi
 | OFF-08 | Recently-played cache with size limit | M |
 | OFF-09 | Offline mode (detect, indicate, dim, skip) | L |
 | OFF-10 | Downloads survive updates and re-login | M |
-| OFF-11 | Downloaded indicator across the app | S |
+| OFF-11 | Downloaded indicator and filter across the app | M |
 | LIB-11 | Browse previously seen screens offline | L |
 | PLY-14 | Data saver on mobile data | M |
 | SET-02 | Data saver toggle | S |

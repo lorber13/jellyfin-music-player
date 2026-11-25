@@ -16,7 +16,6 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **ACC-08 Account switching**: add several servers or users and switch between them, one active at a time. Each has its own library and downloads.
 
 ## 2. Library browsing
-- **LIB-01 Home screen**: Recently played, Recently added, Favorites and Downloaded sections.
 - **LIB-02 Artists list**, alphabetical with quick A–Z scrolling.
 - **LIB-03 Albums list**, sortable by name, year or date added.
 - **LIB-04 Playlists list.**
@@ -25,10 +24,11 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **LIB-07 Album detail**: track list, total duration, year.
 - **LIB-08 Playlist detail**: track list and total duration.
 - **LIB-09 Search** across artists, albums, tracks and playlists.
-- **LIB-10 Favorites**: mark or unmark tracks, albums and artists, synced to the server. Changes made offline sync later.
+- **LIB-10 Favorites**: mark or unmark tracks, albums and artists, synced to the server. Changes made offline sync later. The albums, artists and tracks lists can show favorites only.
 - **LIB-11 Browse offline**: screens the user has already seen still open with no connection.
 - **LIB-12 Large library support**: browsing stays smooth with 10,000+ albums, also in the tracks list (LIB-13), which holds all of their tracks.
-- **LIB-13 Tracks list**: every track in the library, sortable like the albums list. Sorted by date added, the newest track comes first, even within an album. Tracks that tie in the chosen sort keep their album, disc and track order. Tapping a track plays it and then the rest of the list in that order.
+- **LIB-13 Tracks list**: every track in the library, sortable like the albums list. Sorted by date added, the newest track comes first, even within an album. Tracks that tie in the chosen sort keep their album, disc and track order. Like the albums and artists lists, it can show favorites only (LIB-10). Tapping a track plays it and then the rest of the list in that order.
+- **LIB-14 Recently played sort**: the albums and tracks lists can also be sorted by when they were last played.
 
 ## 3. Playlist editing
 - **PL-01 Create a playlist.** It is saved on the server.
@@ -69,7 +69,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **OFF-08 Recently-played cache**: streamed songs are kept automatically up to a size limit (default 1 GB) so replays need no data and can work offline.
 - **OFF-09 Offline mode**: no connection is detected automatically. An offline indicator appears, songs that can't be played are dimmed, and a playing queue skips them.
 - **OFF-10 Downloads survive** app updates and logging back in to the same account.
-- **OFF-11 Downloaded indicator** on tracks, albums and playlists throughout the app.
+- **OFF-11 Downloaded indicator** on tracks, albums and playlists throughout the app. The albums, artists, playlists and tracks lists can show downloaded music only.
 
 ## 6. Android Auto
 - **AUTO-01 Browse in the car**: Home, Albums, Playlists and Downloads tabs.
@@ -118,6 +118,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - Casting: Chromecast, DLNA/UPnP, remote-controlling other Jellyfin clients
 - Editing server metadata (tags, artwork, album info)
 - A merged view combining several servers' libraries (account switching, ACC-08, is in scope)
+- A Home screen on the phone with Recently played, Recently added, Favorites and Downloaded sections (formerly LIB-01). The app is built around the library lists instead, whose sorts and filters show the same music (LIB-03, LIB-10, LIB-13, LIB-14, OFF-11). The car keeps its Home (AUTO-02).
 - Analytics, crash reporting or any tracking
 
 ## 10. Product constraints
