@@ -5,18 +5,13 @@ import androidx.annotation.StringRes
 import androidx.navigation3.runtime.NavKey
 import io.github.lorber13.jellyfinmusic.R
 import io.github.lorber13.jellyfinmusic.feature.albums.AlbumsRoute
-import kotlinx.serialization.Serializable
 
-@Serializable
-data object HomeRoute : NavKey
-
-@Serializable
-data object SearchRoute : NavKey
-
-@Serializable
-data object SettingsRoute : NavKey
-
-/** The tabs of the navigation bar (or rail), in display order. */
+/**
+ * The tabs of the navigation bar (or rail), in display order. The first one is where the app opens.
+ *
+ * The tabs are the library lists: Albums, then Artists (LIB-02), Playlists (LIB-04), Genres (LIB-05)
+ * and Tracks (LIB-13), each added when its list is built.
+ */
 enum class TopLevelDestination(
     /** The first screen of the tab, at the bottom of its back stack. */
     val startRoute: NavKey,
@@ -26,22 +21,10 @@ enum class TopLevelDestination(
     /** Outlined icon, shown while another tab is selected. */
     @param:DrawableRes val unselectedIconResource: Int
 ) {
-    HOME(HomeRoute, R.string.destination_home, R.drawable.ic_home_filled, R.drawable.ic_home_outlined),
-
-    // The library only has albums until the other lists (LIB-02, LIB-04, LIB-05) are built.
-    LIBRARY(
+    ALBUMS(
         AlbumsRoute,
-        R.string.destination_library,
+        R.string.destination_albums,
         R.drawable.ic_library_music_filled,
         R.drawable.ic_library_music_outlined
-    ),
-
-    // The search icon has no filled version, so both states use the same drawable.
-    SEARCH(SearchRoute, R.string.destination_search, R.drawable.ic_search, R.drawable.ic_search),
-    SETTINGS(
-        SettingsRoute,
-        R.string.destination_settings,
-        R.drawable.ic_settings_filled,
-        R.drawable.ic_settings_outlined
     )
 }

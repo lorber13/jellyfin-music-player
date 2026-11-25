@@ -8,10 +8,11 @@ import io.github.lorber13.jellyfinmusic.feature.albums.AlbumsRoute
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
+// Albums is the only tab until LIB-02 adds Artists. Tests that switch between tabs come back then.
 class NavigatorTest {
     private val state = NavigationState(
-        startDestination = TopLevelDestination.HOME,
-        currentDestination = mutableStateOf(TopLevelDestination.HOME),
+        startDestination = TopLevelDestination.ALBUMS,
+        currentDestination = mutableStateOf(TopLevelDestination.ALBUMS),
         backStacks = TopLevelDestination.entries.associateWith { destination ->
             NavBackStack<NavKey>(destination.startRoute)
         }
@@ -19,62 +20,34 @@ class NavigatorTest {
     private val navigator = Navigator(state)
 
     @Test
-    fun navigate_addsRouteToCurrentTabOnly() {
-        navigator.selectTopLevelDestination(TopLevelDestination.LIBRARY)
-
+    fun navigate_addsRouteToCurrentTab() {
         navigator.navigate(AlbumDetailRoute(albumId = "1"))
-
-        assertEquals(listOf(AlbumsRoute, AlbumDetailRoute("1")), state.currentBackStack.toList())
-        assertEquals(listOf<NavKey>(HomeRoute), state.backStacks.getValue(TopLevelDestination.HOME).toList())
-    }
-
-    @Test
-    fun switchingTabs_keepsEachTabsBackStack() {
-        navigator.selectTopLevelDestination(TopLevelDestination.LIBRARY)
-        navigator.navigate(AlbumDetailRoute(albumId = "1"))
-
-        navigator.selectTopLevelDestination(TopLevelDestination.SEARCH)
-        navigator.selectTopLevelDestination(TopLevelDestination.LIBRARY)
 
         assertEquals(listOf(AlbumsRoute, AlbumDetailRoute("1")), state.currentBackStack.toList())
     }
 
     @Test
     fun reselectingCurrentTab_returnsToItsFirstScreen() {
-        navigator.selectTopLevelDestination(TopLevelDestination.LIBRARY)
         navigator.navigate(AlbumDetailRoute(albumId = "1"))
+        navigator.navigate(AlbumDetailRoute(albumId = "2"))
 
-        navigator.selectTopLevelDestination(TopLevelDestination.LIBRARY)
+        navigator.selectTopLevelDestination(TopLevelDestination.ALBUMS)
 
         assertEquals(listOf<NavKey>(AlbumsRoute), state.currentBackStack.toList())
     }
 
     @Test
     fun goBack_closesTheCurrentScreen() {
-        navigator.selectTopLevelDestination(TopLevelDestination.LIBRARY)
         navigator.navigate(AlbumDetailRoute(albumId = "1"))
 
         navigator.goBack()
 
-        assertEquals(TopLevelDestination.LIBRARY, state.currentDestination)
+        assertEquals(TopLevelDestination.ALBUMS, state.currentDestination)
         assertEquals(listOf<NavKey>(AlbumsRoute), state.currentBackStack.toList())
     }
 
     @Test
-    fun goBack_fromFirstScreenOfAnotherTab_returnsToStartTab() {
-        navigator.selectTopLevelDestination(TopLevelDestination.SETTINGS)
-
-        navigator.goBack()
-
-        assertEquals(TopLevelDestination.HOME, state.currentDestination)
-    }
-
-    @Test
-    fun destinationsInUse_alwaysStartsWithStartTab() {
-        assertEquals(listOf(TopLevelDestination.HOME), state.destinationsInUse)
-
-        navigator.selectTopLevelDestination(TopLevelDestination.SEARCH)
-
-        assertEquals(listOf(TopLevelDestination.HOME, TopLevelDestination.SEARCH), state.destinationsInUse)
+    fun destinationsInUse_isTheStartTab() {
+        assertEquals(listOf(TopLevelDestination.ALBUMS), state.destinationsInUse)
     }
 }

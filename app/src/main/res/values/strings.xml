@@ -4,9 +4,6 @@
     <string name="app_name">Jellyfin Music Player</string>
 
     <!-- Labels of the main navigation tabs. Keep them short: they sit under an icon in a bar
-         shared by four tabs. -->
-    <string name="destination_home">Home</string>
-    <string name="destination_library">Library</string>
-    <string name="destination_search">Search</string>
-    <string name="destination_settings">Settings</string>
+         shared by up to five tabs. -->
+    <string name="destination_albums">Albums</string>
 </resources>

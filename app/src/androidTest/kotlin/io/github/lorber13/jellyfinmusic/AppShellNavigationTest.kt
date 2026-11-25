@@ -37,24 +37,15 @@ class AppShellNavigationTest {
         }
     }
 
+    // Albums is the only tab until LIB-02 adds Artists, so there is no navigation bar yet.
     @Test
-    fun tappingEachTab_showsItsScreen() {
-        composeRule.onNode(screenTitle(R.string.destination_home)).assertExists()
-
-        composeRule.onNode(navigationItem(R.string.destination_library)).performClick()
+    fun opensOnTheAlbumsList_withoutANavigationBar() {
         composeRule.onNode(screenTitle(AlbumsR.string.feature_albums_title)).assertExists()
-
-        composeRule.onNode(navigationItem(R.string.destination_search)).performClick()
-        composeRule.onNode(screenTitle(R.string.destination_search)).assertExists()
-
-        composeRule.onNode(navigationItem(R.string.destination_settings)).performClick()
-        composeRule.onNode(screenTitle(R.string.destination_settings)).assertExists()
+        composeRule.onNode(navigationItem(R.string.destination_albums)).assertDoesNotExist()
     }
 
     @Test
     fun openingAnAlbumAndGoingBack_returnsToTheAlbumsList() {
-        composeRule.onNode(navigationItem(R.string.destination_library)).performClick()
-
         composeRule.onNode(hasText("Steam & Rust") and hasClickAction()).performClick()
         composeRule.onNode(hasText("Steam & Rust Overture")).assertExists()
 
@@ -66,7 +57,6 @@ class AppShellNavigationTest {
     // Each album screen has its own ViewModel, so the second album doesn't show the first one's tracks.
     @Test
     fun openingAnotherAlbum_showsItsOwnTracks() {
-        composeRule.onNode(navigationItem(R.string.destination_library)).performClick()
         composeRule.onNode(hasText("Steam & Rust") and hasClickAction()).performClick()
         composeRule.onNode(hasText("Steam & Rust Overture")).assertExists()
         composeRule.runOnUiThread { composeRule.activity.onBackPressedDispatcher.onBackPressed() }
