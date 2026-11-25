@@ -27,7 +27,8 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **LIB-09 Search** across artists, albums, tracks and playlists.
 - **LIB-10 Favorites**: mark or unmark tracks, albums and artists, synced to the server. Changes made offline sync later.
 - **LIB-11 Browse offline**: screens the user has already seen still open with no connection.
-- **LIB-12 Large library support**: browsing stays smooth with 10,000+ albums.
+- **LIB-12 Large library support**: browsing stays smooth with 10,000+ albums, also in the tracks list (LIB-13), which holds all of their tracks.
+- **LIB-13 Tracks list**: every track in the library, sortable like the albums list. Sorted by date added, the newest track comes first, even within an album. Tracks that tie in the chosen sort keep their album, disc and track order. Tapping a track plays it and then the rest of the list in that order.
 
 ## 3. Playlist editing
 - **PL-01 Create a playlist.** It is saved on the server.
