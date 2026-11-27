@@ -28,7 +28,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -120,17 +119,13 @@ private fun TrackProgressLine(progress: () -> Float?, isLoading: Boolean) {
     val lineModifier = Modifier
         .fillMaxWidth()
         .clearAndSetSemantics {}
+    // Material 3's default style: the gap between the filled part and the track, and the dot at
+    // the track's end, are there for contrast (Material's docs call the plain line not recommended).
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         if (isLoading) {
-            LinearProgressIndicator(modifier = lineModifier, strokeCap = StrokeCap.Butt, gapSize = 0.dp)
+            LinearProgressIndicator(modifier = lineModifier)
         } else {
-            LinearProgressIndicator(
-                progress = { progress() ?: 0f },
-                modifier = lineModifier,
-                strokeCap = StrokeCap.Butt,
-                gapSize = 0.dp,
-                drawStopIndicator = {}
-            )
+            LinearProgressIndicator(progress = { progress() ?: 0f }, modifier = lineModifier)
         }
     }
 }
