@@ -102,6 +102,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **UI-05 Translatable**: English by default, and every text in the app can be translated.
 - **UI-06 Community translations**: volunteers can contribute translations through a translation platform.
 - **UI-07 Tablet & foldable layouts**: two-pane layouts on large screens, e.g. a list beside its detail, or the library beside Now Playing.
+- **UI-08 Animations**: screen transitions and other motion are consistent across the app. Back, including the predictive back gesture, always acts on the screen that is shown, also while a transition is still running.
 
 ## 9. Out of scope
 **Other devices**

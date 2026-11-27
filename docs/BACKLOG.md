@@ -12,7 +12,7 @@ Built from [FEATURES.md](FEATURES.md). Feature items keep their spec IDs. **TECH
 | [M2 Player complete](#m2--library--player-complete) | Daily-driver online player | 28 |
 | [M3 Android Auto](#m3--android-auto) | Full car experience (online) | 11 |
 | [M4 Offline](#m4--offline) | Works without a connection, on the phone and in the car | 17 |
-| [M5 Public release](#m5--public-release) | Ready for Play + F-Droid | 14 |
+| [M5 Public release](#m5--public-release) | Ready for Play + F-Droid | 15 |
 | [M6 Extras](#m6--extras) | Nice-to-haves after the public release | 5 |
 
 ---
@@ -127,6 +127,7 @@ Done when: the app is published on Google Play and F-Droid.
 | UI-03 | Portrait and landscape | M |
 | UI-04 | Accessibility pass | M |
 | UI-07 | Tablet and foldable two-pane layouts | L |
+| UI-08 | App animations and transitions | M |
 | SET-07 | Export logs | M |
 | SET-08 | About screen (version, GPL-3.0, open-source notices) | S |
 | TECH-05 | Release signing and versioning | S |
