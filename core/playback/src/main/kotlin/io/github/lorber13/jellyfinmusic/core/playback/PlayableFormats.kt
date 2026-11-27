@@ -65,12 +65,19 @@ internal fun directPlayFormatsOf(decodableCodecs: Set<AudioCodec>): List<DirectP
 }
 
 /**
+ * The decoders Android's compatibility rules (CDD section 5.1.2, from Android 10 on) require on
+ * every phone with audio output. Optional ones, such as ALAC and AC-3, differ between phones.
+ */
+private val requiredAudioCodecs: Set<AudioCodec> =
+    setOf(AudioCodec.AAC, AudioCodec.MP3, AudioCodec.FLAC, AudioCodec.OPUS, AudioCodec.VORBIS)
+
+/**
  * The audio codecs this phone has a decoder for. Asked rather than assumed, because decoders
  * differ between phones: the Pixel 10, for example, has none for ALAC but has one for AC-3.
  *
- * Empty when the phone fails to list them, as some do (ExoPlayer guards the same query). The
- * server then converts every track to AAC, which every Android phone must be able to decode,
- * instead of every lookup failing.
+ * When the phone fails to list them, as some do (ExoPlayer guards the same query), the ones every
+ * phone must have, so that only tracks in optional formats are converted. If the player can't
+ * find its decoders either, playback can still fail later, with an error instead of silence.
  */
 internal fun decodableAudioCodecs(): Set<AudioCodec> = try {
     MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos
@@ -78,6 +85,6 @@ internal fun decodableAudioCodecs(): Set<AudioCodec> = try {
         .flatMap { it.supportedTypes.asList() }
         .mapNotNullTo(mutableSetOf()) { mimeType -> codecsByDecoderMimeType[mimeType.lowercase()] }
 } catch (error: RuntimeException) {
-    Log.w(TAG, "Couldn't list the phone's audio decoders", error)
-    emptySet()
+    Log.w(TAG, "Couldn't list the phone's audio decoders; assuming only the required ones", error)
+    requiredAudioCodecs
 }
