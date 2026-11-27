@@ -68,7 +68,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **OFF-06 Downloads screen**: progress, size, pause/resume/cancel/delete, and total storage used.
 - **OFF-07 Download location**: internal storage or SD card, with existing downloads moved when it changes. If the SD card is removed, its downloads show as unavailable but aren't deleted.
 - **OFF-08 Recently-played cache**: streamed songs are kept automatically up to a size limit (default 1 GB) so replays need no data and can work offline.
-- **OFF-09 Offline mode**: no connection is detected automatically. An offline indicator appears, and the library lists show only music that can be played (downloaded or cached), also when opened from stored data (LIB-11), and the user can choose to show the rest. Songs that can't be played are dimmed wherever they're shown, and a playing queue skips them.
+- **OFF-09 Offline mode**: no connection is detected automatically. An offline indicator appears, and the library lists show only music that can be played (downloaded or cached), and the user can choose to show the rest. Songs that can't be played are dimmed wherever they're shown, and a playing queue skips them.
 - **OFF-10 Downloads survive** app updates and logging back in to the same account.
 - **OFF-11 Downloaded indicator** on tracks, albums and playlists throughout the app. The albums, artists, playlists and tracks lists can show downloaded music only.
 
