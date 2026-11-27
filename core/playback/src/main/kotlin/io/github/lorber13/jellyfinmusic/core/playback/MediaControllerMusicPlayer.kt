@@ -65,10 +65,15 @@ class MediaControllerMusicPlayer @Inject internal constructor(@param:Application
     private val playerStates = MutableStateFlow<PlayerState?>(null)
     override val state: StateFlow<PlayerState?> = playerStates.asStateFlow()
 
+    // Every player event, also those that leave the state as it was, such as a seek or a track
+    // starting again. Never suspends the player's callback.
+    private val playerEvents =
+        MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
     // The controller offers no position updates, so it is asked on every tick. It is also asked
-    // whenever the player changes, so a new track doesn't show the last one's position until the
+    // after every player event, so a seek or a new track doesn't show the old position until the
     // next tick.
-    override val positions: Flow<PlaybackPosition> = merge(playerStates, ticks())
+    override val positions: Flow<PlaybackPosition> = merge(playerEvents, ticks())
         .mapNotNull { controller?.let(::playbackPositionOf) }
         .distinctUntilChanged()
         .flowOn(Dispatchers.Main.immediate)
@@ -81,6 +86,7 @@ class MediaControllerMusicPlayer @Inject internal constructor(@param:Application
     private val playerListener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
             playerStates.value = playerStateOf(player)
+            playerEvents.tryEmit(Unit)
         }
     }
 
@@ -167,6 +173,7 @@ class MediaControllerMusicPlayer @Inject internal constructor(@param:Application
                     controller = connected
                     connected.addListener(playerListener)
                     playerStates.value = playerStateOf(connected)
+                    playerEvents.tryEmit(Unit)
                 }
 
                 // Cancelled when the activity stopped before the connection was made.
