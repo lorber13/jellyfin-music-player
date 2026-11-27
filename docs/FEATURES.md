@@ -46,7 +46,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **PLY-04 Queue management**: view, reorder, remove, clear.
 - **PLY-05 Repeat modes**: off, all, one.
 - **PLY-06 Mini player** on every screen.
-- **PLY-07 Now Playing screen**: artwork, title, artist, album, seek bar, controls, and colors taken from the album art.
+- **PLY-07 Now Playing screen**: artwork, title, artist, album, seek bar and controls.
 - **PLY-08 Background playback** with a media notification and lock-screen controls.
 - **PLY-09 Headset & Bluetooth controls**: play/pause/next/previous from buttons.
 - **PLY-10 Pause when headphones disconnect**, and lower or pause the volume for calls and navigation prompts.
@@ -121,6 +121,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - A merged view combining several servers' libraries (account switching, ACC-08, is in scope)
 - A Home screen on the phone with Recently played, Recently added, Favorites and Downloaded sections (formerly LIB-01). The app is built around the library lists instead, whose sorts and filters show the same music (LIB-03, LIB-10, LIB-13, LIB-14, LIB-15, OFF-11). The car keeps its Home (AUTO-02).
 - A Genres tab or genres list on the phone (formerly part of LIB-05). Genres are a filter of the albums list instead (LIB-05). The car keeps its Genres (AUTO-02).
+- Colors taken from the album art on the Now Playing screen (formerly part of PLY-07). The screen uses the app's theme.
 - Analytics, crash reporting or any tracking
 
 ## 10. Product constraints

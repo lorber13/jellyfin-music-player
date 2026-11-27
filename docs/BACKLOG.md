@@ -45,7 +45,7 @@ Done when: the whole library can be browsed and played online, with a full playe
 | ID | Item | Size |
 |---|---|---|
 | PLY-06 | Mini player on every screen | M |
-| PLY-07 | Now Playing screen with album-art colors | M |
+| PLY-07 | Now Playing screen | M |
 | TECH-09 | Local library store that screens read from, synced from the server, kept per server and user | L |
 | LIB-12 | Smooth browsing for 10,000+ album libraries | L |
 | LIB-02 | Artists list with A–Z scrolling | M |
