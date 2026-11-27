@@ -9,7 +9,7 @@ Built from [FEATURES.md](FEATURES.md). Feature items keep their spec IDs. **TECH
 | Milestone | Goal | Items |
 |---|---|---|
 | [M1 Foundation](#m1--foundation-log-in-and-stream) | Log in and stream an album | 16 |
-| [M2 Player complete](#m2--library--player-complete) | Daily-driver online player | 26 |
+| [M2 Player complete](#m2--library--player-complete) | Daily-driver online player | 27 |
 | [M3 Android Auto](#m3--android-auto) | Full car experience (online) | 11 |
 | [M4 Offline](#m4--offline) | Works without a connection, on the phone and in the car | 17 |
 | [M5 Public release](#m5--public-release) | Ready for Play + F-Droid | 14 |
@@ -35,7 +35,7 @@ Done when: a user logs in to their server, opens an album and listens to it with
 | ACC-07 | "Unsupported server version" message (< 10.9) | S |
 | LIB-03 | Albums list with sorting | M |
 | LIB-07 | Album detail screen | S |
-| PLY-01 | Play a track, album, playlist or artist | L |
+| PLY-01 | Play a track, album, playlist or artist (playlists and artists with LIB-08 and LIB-06) | L |
 | PLY-08 | Background playback with notification and lock-screen controls | M |
 | PLY-13 | Original quality when supported, server conversion otherwise | M |
 
@@ -44,30 +44,31 @@ Done when: the whole library can be browsed and played online, with a full playe
 
 | ID | Item | Size |
 |---|---|---|
+| PLY-06 | Mini player on every screen | M |
+| PLY-07 | Now Playing screen with album-art colors | M |
+| TECH-09 | Local library store that screens read from, synced from the server, kept per server and user | L |
+| LIB-12 | Smooth browsing for 10,000+ album libraries | L |
 | LIB-02 | Artists list with A–Z scrolling | M |
 | LIB-04 | Playlists list | S |
 | LIB-05 | Genres list and genre detail | M |
 | LIB-06 | Artist detail (albums, top tracks) | M |
 | LIB-08 | Playlist detail | S |
 | LIB-09 | Search | M |
-| LIB-10 | Favorites (mark, unmark, sync, favorites filter) | M |
-| LIB-12 | Smooth browsing for 10,000+ album libraries | L |
+| LIB-10 | Favorites (mark, unmark, sync, favorites filter) | L |
 | TECH-08 | Look up each track's stream just before it plays | L |
 | LIB-13 | Tracks list; tapping a track plays the rest of the list | L |
 | PLY-02 | Shuffle album, playlist, artist or whole library | S |
 | PLY-03 | Play next / Add to queue | S |
 | PLY-04 | Queue screen: view, reorder, remove, clear | M |
 | PLY-05 | Repeat modes | S |
-| PLY-06 | Mini player on every screen | M |
-| PLY-07 | Now Playing screen with album-art colors | M |
 | PLY-09 | Headset and Bluetooth button controls | S |
 | PLY-10 | Pause on headphone disconnect; handle calls and navigation prompts | S |
 | PLY-11 | Resume queue and position after app close or reboot | M |
 | PLY-12 | Gapless playback | S |
 | PLY-15 | Play history sync to Jellyfin | M |
 | LIB-14 | Recently played sort for albums and tracks | M |
-| ACC-05 | Log out | M |
-| ACC-06 | Session-expired handling | M |
+| ACC-05 | Log out (downloads part in M4) | M |
+| ACC-06 | Session-expired handling (downloads part in M4) | M |
 | SET-01 | Streaming quality limits (Wi-Fi / mobile data) | S |
 | SET-06 | Account settings | S |
 
@@ -89,7 +90,7 @@ Done when: everything below works online in the Desktop Head Unit (DHU) and in a
 | SET-05 | Android Auto settings | S |
 
 ## M4 — Offline
-Done when: a pinned album plays in airplane mode on the phone and in the car (with artwork, AUTO-08/AUTO-09), and plays and favorites sync after reconnecting.
+Done when: a pinned album plays in airplane mode on the phone and in the car (with artwork, AUTO-08/AUTO-09), plays and favorites sync after reconnecting, logging out asks about downloads (ACC-05), and downloads keep playing when the session expires (ACC-06).
 
 | ID | Item | Size |
 |---|---|---|
