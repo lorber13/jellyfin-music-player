@@ -1,8 +1,12 @@
 package io.github.lorber13.jellyfinmusic.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -24,14 +28,15 @@ import androidx.navigation3.ui.NavDisplay
 import io.github.lorber13.jellyfinmusic.R
 import io.github.lorber13.jellyfinmusic.feature.albums.AlbumDetailRoute
 import io.github.lorber13.jellyfinmusic.feature.albums.albumsEntries
+import io.github.lorber13.jellyfinmusic.feature.player.MiniPlayer
 import io.github.lorber13.jellyfinmusic.navigation.Navigator
 import io.github.lorber13.jellyfinmusic.navigation.TopLevelDestination
 import io.github.lorber13.jellyfinmusic.navigation.rememberNavigationState
 import io.github.lorber13.jellyfinmusic.navigation.toDecoratedEntries
 
 /**
- * The app shell: the navigation bar (or rail on wider windows) around the current screen, and
- * messages about playback over every screen.
+ * The app shell: the navigation bar (or rail on wider windows) around the current screen, the
+ * mini player under every screen, and messages about playback over every screen.
  */
 @Composable
 fun JellyfinMusicApp(viewModel: AppShellViewModel = hiltViewModel()) {
@@ -74,14 +79,18 @@ fun JellyfinMusicApp(viewModel: AppShellViewModel = hiltViewModel()) {
             }
         }
     ) {
-        Box {
-            NavDisplay(
-                entries = navigationState.toDecoratedEntries(entryProvider),
-                onBack = navigator::goBack
-            )
-            // The navigation suite has no place for messages, so they go over the screen, above
-            // the navigation bar and the system bars.
-            SnackbarHost(snackbarHostState, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
+        // The mini player sits under every screen, above the navigation bar. It leaves no insets
+        // to the screens: they would otherwise keep room for the system bars behind it.
+        Scaffold(bottomBar = { MiniPlayer() }, contentWindowInsets = WindowInsets(0)) { innerPadding ->
+            Box(Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)) {
+                NavDisplay(
+                    entries = navigationState.toDecoratedEntries(entryProvider),
+                    onBack = navigator::goBack
+                )
+                // The navigation suite has no place for messages, so they go over the screen, above
+                // the mini player, the navigation bar and the system bars.
+                SnackbarHost(snackbarHostState, Modifier.align(Alignment.BottomCenter).safeDrawingPadding())
+            }
         }
     }
 }

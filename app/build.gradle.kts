@@ -44,6 +44,7 @@ dependencies {
     implementation(project(":core:playback"))
     implementation(project(":feature:albums"))
     implementation(project(":feature:login"))
+    implementation(project(":feature:player"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

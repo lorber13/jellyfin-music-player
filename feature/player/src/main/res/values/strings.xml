@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Read by screen readers for the button in the player bar at the bottom of the screen that plays the paused song. -->
+    <string name="feature_player_play">Play</string>
+    <!-- Read by screen readers for the button in the player bar at the bottom of the screen that pauses the song that is playing. -->
+    <string name="feature_player_pause">Pause</string>
+    <!-- Read by screen readers for the button in the player bar at the bottom of the screen that skips to the next song in the queue. -->
+    <string name="feature_player_next_song">Next song</string>
+</resources>

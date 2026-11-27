@@ -8,10 +8,14 @@ import io.github.lorber13.jellyfinmusic.core.data.library.AlbumsResult
 import io.github.lorber13.jellyfinmusic.core.data.library.LibraryFailure
 import io.github.lorber13.jellyfinmusic.core.data.library.Track
 import io.github.lorber13.jellyfinmusic.core.playback.MusicPlayer
+import io.github.lorber13.jellyfinmusic.core.playback.PlaybackPosition
+import io.github.lorber13.jellyfinmusic.core.playback.PlayerState
 import io.github.lorber13.jellyfinmusic.core.playback.QueueItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -124,11 +128,17 @@ class AlbumDetailViewModelTest {
     private class FakeMusicPlayer : MusicPlayer {
         val playRequests = mutableListOf<Pair<List<QueueItem>, Int>>()
 
+        override val state: StateFlow<PlayerState?> = MutableStateFlow(null)
+        override val positions: Flow<PlaybackPosition> = emptyFlow()
         override val errorMessages: Flow<String> = emptyFlow()
 
         override fun play(queue: List<QueueItem>, startIndex: Int) {
             playRequests += queue to startIndex
         }
+
+        override fun playOrPause() = Unit
+
+        override fun skipToNext() = Unit
     }
 
     private class FakeAlbumRepository : AlbumRepository {
