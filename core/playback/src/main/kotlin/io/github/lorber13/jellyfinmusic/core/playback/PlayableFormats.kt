@@ -1,10 +1,13 @@
 package io.github.lorber13.jellyfinmusic.core.playback
 
 import android.media.MediaCodecList
+import android.util.Log
 import androidx.media3.common.MimeTypes
 import io.github.lorber13.jellyfinmusic.core.data.stream.AudioCodec
 import io.github.lorber13.jellyfinmusic.core.data.stream.AudioContainer
 import io.github.lorber13.jellyfinmusic.core.data.stream.DirectPlayFormat
+
+private const val TAG = "PlayableFormats"
 
 /**
  * The containers Media3 reads from a progressive stream, with the codecs each can hold (Media3's
@@ -64,8 +67,17 @@ internal fun directPlayFormatsOf(decodableCodecs: Set<AudioCodec>): List<DirectP
 /**
  * The audio codecs this phone has a decoder for. Asked rather than assumed, because decoders
  * differ between phones: the Pixel 10, for example, has none for ALAC but has one for AC-3.
+ *
+ * Empty when the phone fails to list them, as some do (ExoPlayer guards the same query). The
+ * server then converts every track to AAC, which every Android phone must be able to decode,
+ * instead of every lookup failing.
  */
-internal fun decodableAudioCodecs(): Set<AudioCodec> = MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos
-    .filterNot { it.isEncoder }
-    .flatMap { it.supportedTypes.asList() }
-    .mapNotNullTo(mutableSetOf()) { mimeType -> codecsByDecoderMimeType[mimeType.lowercase()] }
+internal fun decodableAudioCodecs(): Set<AudioCodec> = try {
+    MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos
+        .filterNot { it.isEncoder }
+        .flatMap { it.supportedTypes.asList() }
+        .mapNotNullTo(mutableSetOf()) { mimeType -> codecsByDecoderMimeType[mimeType.lowercase()] }
+} catch (error: RuntimeException) {
+    Log.w(TAG, "Couldn't list the phone's audio decoders", error)
+    emptySet()
+}
