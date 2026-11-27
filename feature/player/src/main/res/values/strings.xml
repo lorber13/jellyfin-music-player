@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Read by screen readers for the button in the player bar at the bottom of the screen that plays the paused song. -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Name of the full-screen player that shows the song that is playing, with its cover, a seek bar and the playback buttons. Read by screen readers when the screen opens. -->
+    <string name="feature_player_now_playing">Now Playing</string>
+    <!-- Read by screen readers after the song shown in the player bar at the bottom of the screen, as "double-tap to …": tapping the bar opens the Now Playing screen. -->
+    <string name="feature_player_open_now_playing">Open Now Playing</string>
+    <!-- Read by screen readers for the down-arrow button at the top of the Now Playing screen, which closes it and returns to the music library. -->
+    <string name="feature_player_close_now_playing">Close Now Playing</string>
+    <!-- Read by screen readers for the buttons, in the player bar at the bottom of the screen and on the Now Playing screen, that play the paused song. -->
     <string name="feature_player_play">Play</string>
-    <!-- Read by screen readers for the button in the player bar at the bottom of the screen that pauses the song that is playing. -->
+    <!-- Read by screen readers for the buttons, in the player bar at the bottom of the screen and on the Now Playing screen, that pause the song that is playing. -->
     <string name="feature_player_pause">Pause</string>
-    <!-- Read by screen readers for the button in the player bar at the bottom of the screen that skips to the next song in the queue. -->
+    <!-- Read by screen readers for the button on the Now Playing screen that goes back to the start of the song, or to the song before when this one has only just started. -->
+    <string name="feature_player_previous_song">Previous song</string>
+    <!-- Read by screen readers for the buttons, in the player bar at the bottom of the screen and on the Now Playing screen, that skip to the next song in the queue. -->
     <string name="feature_player_next_song">Next song</string>
+    <!-- Read by screen readers for the seek bar on the Now Playing screen, which shows how far the song has played and moves it to another point. -->
+    <string name="feature_player_song_position">Song position</string>
+    <!-- Read by screen readers for the seek bar on the Now Playing screen: how far the song has played, then its length. Both times are spelled out in words by the app. -->
+    <string name="feature_player_position_of_duration"><xliff:g id="position" example="1 minute, 23 seconds">%1$s</xliff:g> of <xliff:g id="duration" example="4 minutes, 56 seconds">%2$s</xliff:g></string>
 </resources>

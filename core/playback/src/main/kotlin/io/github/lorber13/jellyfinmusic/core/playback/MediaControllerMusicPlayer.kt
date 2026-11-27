@@ -25,6 +25,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
@@ -140,8 +141,16 @@ class MediaControllerMusicPlayer @Inject internal constructor(@param:Application
         withController { controller -> Util.handlePlayPauseButtonAction(controller) }
     }
 
+    override fun skipToPrevious() {
+        withController { controller -> controller.seekToPrevious() }
+    }
+
     override fun skipToNext() {
         withController { controller -> controller.seekToNext() }
+    }
+
+    override fun seekTo(position: Duration) {
+        withController { controller -> controller.seekTo(position.inWholeMilliseconds) }
     }
 
     private fun withController(action: (MediaController) -> Unit) {
@@ -218,9 +227,13 @@ internal fun playerStateOf(player: Player): PlayerState? {
     return PlayerState(
         title = metadata.title?.toString().orEmpty(),
         artist = metadata.artist?.toString(),
+        album = metadata.albumTitle?.toString(),
         artworkUrl = metadata.artworkUri?.toString(),
         isPlaying = !Util.shouldShowPlayButton(player),
         isLoading = player.playWhenReady && player.playbackState == Player.STATE_BUFFERING,
+        // Only available once the track has loaded and its stream can be moved in.
+        isSeekable = player.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM),
+        hasPrevious = player.isCommandAvailable(Player.COMMAND_SEEK_TO_PREVIOUS),
         // Also true on the last track when the queue repeats.
         hasNext = player.isCommandAvailable(Player.COMMAND_SEEK_TO_NEXT)
     )

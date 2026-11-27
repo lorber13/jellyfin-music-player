@@ -16,6 +16,7 @@ import io.github.lorber13.jellyfinmusic.feature.albums.R as AlbumsR
 import io.github.lorber13.jellyfinmusic.feature.player.R as PlayerR
 import io.github.lorber13.jellyfinmusic.ui.JellyfinMusicApp
 import javax.inject.Inject
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -34,13 +35,16 @@ class AppShellNavigationTest {
     @Inject
     lateinit var musicPlayer: FakeMusicPlayer
 
-    // The app opens on the sign-in flow, so the shell is shown on its own.
+    private var nowPlayingOpenings = 0
+
+    // The app opens on the sign-in flow, so the shell is shown on its own. Now Playing opens over
+    // the shell, outside it.
     @Before
     fun showAppShell() {
         hiltRule.inject()
         composeRule.setContent {
             JellyfinMusicTheme {
-                JellyfinMusicApp()
+                JellyfinMusicApp(onOpenNowPlaying = { nowPlayingOpenings++ })
             }
         }
     }
@@ -81,14 +85,7 @@ class AppShellNavigationTest {
 
     @Test
     fun miniPlayer_showsOverTheAlbumsListAndTheAlbumScreen() {
-        musicPlayer.state.value = PlayerState(
-            title = "Boiler Room",
-            artist = "The Copper Kettles",
-            artworkUrl = null,
-            isPlaying = true,
-            isLoading = false,
-            hasNext = true
-        )
+        musicPlayer.state.value = boilerRoom
         composeRule.onNode(hasText("Boiler Room")).assertExists()
         composeRule.onNode(miniPlayerButton(PlayerR.string.feature_player_pause)).assertExists()
 
@@ -97,6 +94,27 @@ class AppShellNavigationTest {
         composeRule.onNode(hasText("Steam & Rust Overture")).assertExists()
         composeRule.onNode(hasText("Boiler Room")).assertExists()
     }
+
+    @Test
+    fun tappingTheMiniPlayer_opensNowPlaying() {
+        musicPlayer.state.value = boilerRoom
+
+        composeRule.onNode(hasText("Boiler Room") and hasClickAction()).performClick()
+
+        assertEquals(1, nowPlayingOpenings)
+    }
+
+    private val boilerRoom = PlayerState(
+        title = "Boiler Room",
+        artist = "The Copper Kettles",
+        album = "Steam & Rust",
+        artworkUrl = null,
+        isPlaying = true,
+        isLoading = false,
+        isSeekable = true,
+        hasPrevious = true,
+        hasNext = true
+    )
 
     // A tab label and a screen title can show the same text; only the tab is clickable.
     private fun navigationItem(@StringRes label: Int): SemanticsMatcher =

@@ -43,17 +43,19 @@ class PlayerStateTest {
 
         assertEquals("Boiler Room", state.title)
         assertEquals("The Copper Kettles", state.artist)
+        assertEquals("Steam & Rust", state.album)
         assertEquals("http://music.local:8096/Items/album-1/Images/Primary", state.artworkUrl)
     }
 
     @Test
-    fun trackWithoutArtistsOrArtwork_hasNone() {
+    fun trackWithoutArtistsAlbumOrArtwork_hasNone() {
         val untitled = QueueItem("track-9", "Untitled", artistNames = emptyList(), albumName = null, artworkUrl = null)
         onMainThread { player.setMediaItems(listOf(playableItemOf(untitled))) }
 
         val state = checkNotNull(stateOnMainThread())
 
         assertNull(state.artist)
+        assertNull(state.album)
         assertNull(state.artworkUrl)
     }
 
@@ -77,6 +79,22 @@ class PlayerStateTest {
 
         assertEquals("Whistle Stop", lastTrack.title)
         assertFalse(lastTrack.hasNext)
+    }
+
+    // The player only learns that a track can be moved in once it has loaded it.
+    @Test
+    fun trackNotLoadedYet_isNotSeekable() {
+        onMainThread { player.setMediaItems(listOf(playableItemOf(boilerRoom))) }
+
+        assertFalse(checkNotNull(stateOnMainThread()).isSeekable)
+    }
+
+    // Previous goes back to the start of the first track.
+    @Test
+    fun firstTrack_hasPrevious() {
+        onMainThread { player.setMediaItems(listOf(playableItemOf(boilerRoom), playableItemOf(whistleStop))) }
+
+        assertTrue(checkNotNull(stateOnMainThread()).hasPrevious)
     }
 
     private fun onMainThread(action: () -> Unit) = instrumentation.runOnMainSync(action)

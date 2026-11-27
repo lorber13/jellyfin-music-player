@@ -4,6 +4,7 @@ import io.github.lorber13.jellyfinmusic.core.playback.MusicPlayer
 import io.github.lorber13.jellyfinmusic.core.playback.PlaybackPosition
 import io.github.lorber13.jellyfinmusic.core.playback.PlayerState
 import io.github.lorber13.jellyfinmusic.core.playback.QueueItem
+import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -65,6 +66,10 @@ class AppShellViewModelTest {
 
         override fun playOrPause() = Unit
 
+        override fun skipToPrevious() = Unit
+
         override fun skipToNext() = Unit
+
+        override fun seekTo(position: Duration) = Unit
     }
 }

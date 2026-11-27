@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -32,7 +33,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -47,9 +47,11 @@ import io.github.lorber13.jellyfinmusic.core.playback.PlayerState
  * The bar under every screen that shows what is playing, with play/pause and next buttons. It
  * slides in when music is queued and out when the queue is emptied. Place it at the bottom of the
  * window or above the navigation bar: it keeps its content clear of the system bars there.
+ *
+ * @param onClick opens the Now Playing screen ([NowPlayingRoute]).
  */
 @Composable
-fun MiniPlayer(modifier: Modifier = Modifier) {
+fun MiniPlayer(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val viewModel: MiniPlayerViewModel = hiltViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     AnimatedContent(
@@ -66,6 +68,7 @@ fun MiniPlayer(modifier: Modifier = Modifier) {
                 state = shownState,
                 // Read while drawing, so the line moves without recomposing the bar every second.
                 progress = { progress },
+                onClick = onClick,
                 onPlayOrPause = viewModel::playOrPause,
                 onSkipToNext = viewModel::skipToNext
             )
@@ -77,6 +80,7 @@ fun MiniPlayer(modifier: Modifier = Modifier) {
 internal fun MiniPlayerContent(
     state: PlayerState,
     progress: () -> Float?,
+    onClick: () -> Unit,
     onPlayOrPause: () -> Unit,
     onSkipToNext: () -> Unit,
     modifier: Modifier = Modifier
@@ -84,7 +88,13 @@ internal fun MiniPlayerContent(
     // The background reaches the window's edges; the content stays clear of the system bars and
     // the camera cutout. Not of the keyboard (safeDrawing would include it): the bar stays behind it.
     val barInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
-    Surface(modifier = modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surfaceContainer) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            // Screen readers read the track's text as the bar's label; the buttons stay separate items.
+            .clickable(onClickLabel = stringResource(R.string.feature_player_open_now_playing), onClick = onClick),
+        color = MaterialTheme.colorScheme.surfaceContainer
+    ) {
         Column(
             modifier = Modifier.windowInsetsPadding(
                 barInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
@@ -132,8 +142,7 @@ private fun TrackProgressLine(progress: () -> Float?, isLoading: Boolean) {
 
 @Composable
 private fun TrackText(state: PlayerState, modifier: Modifier = Modifier) {
-    // Read as one item by screen readers.
-    Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
+    Column(modifier = modifier) {
         Text(
             text = state.title,
             style = MaterialTheme.typography.bodyLarge,
@@ -183,12 +192,15 @@ private fun MiniPlayerContentPreview() {
     val state = PlayerState(
         title = "Whistle Stop",
         artist = "The Copper Kettles, Aurora Fields",
+        album = "Steam & Rust",
         artworkUrl = null,
         isPlaying = true,
         isLoading = false,
+        isSeekable = true,
+        hasPrevious = true,
         hasNext = true
     )
     JellyfinMusicTheme {
-        MiniPlayerContent(state = state, progress = { 0.4f }, onPlayOrPause = {}, onSkipToNext = {})
+        MiniPlayerContent(state = state, progress = { 0.4f }, onClick = {}, onPlayOrPause = {}, onSkipToNext = {})
     }
 }

@@ -10,6 +10,7 @@ import io.github.lorber13.jellyfinmusic.core.playback.PlayerState
 import io.github.lorber13.jellyfinmusic.core.playback.QueueItem
 import io.github.lorber13.jellyfinmusic.core.playback.di.PlaybackModule
 import javax.inject.Singleton
+import kotlin.time.Duration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -39,5 +40,9 @@ class FakeMusicPlayer : MusicPlayer {
 
     override fun playOrPause() = Unit
 
+    override fun skipToPrevious() = Unit
+
     override fun skipToNext() = Unit
+
+    override fun seekTo(position: Duration) = Unit
 }

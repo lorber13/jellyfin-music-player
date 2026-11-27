@@ -37,9 +37,11 @@ import io.github.lorber13.jellyfinmusic.navigation.toDecoratedEntries
 /**
  * The app shell: the navigation bar (or rail on wider windows) around the current screen, the
  * mini player under every screen, and messages about playback over every screen.
+ *
+ * @param onOpenNowPlaying opens the Now Playing screen over the shell, when the mini player is tapped.
  */
 @Composable
-fun JellyfinMusicApp(viewModel: AppShellViewModel = hiltViewModel()) {
+fun JellyfinMusicApp(onOpenNowPlaying: () -> Unit, viewModel: AppShellViewModel = hiltViewModel()) {
     val navigationState = rememberNavigationState(startDestination = TopLevelDestination.ALBUMS)
     val navigator = remember(navigationState) { Navigator(navigationState) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -81,7 +83,10 @@ fun JellyfinMusicApp(viewModel: AppShellViewModel = hiltViewModel()) {
     ) {
         // The mini player sits under every screen, above the navigation bar. It leaves no insets
         // to the screens: they would otherwise keep room for the system bars behind it.
-        Scaffold(bottomBar = { MiniPlayer() }, contentWindowInsets = WindowInsets(0)) { innerPadding ->
+        Scaffold(
+            bottomBar = { MiniPlayer(onClick = onOpenNowPlaying) },
+            contentWindowInsets = WindowInsets(0)
+        ) { innerPadding ->
             Box(Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)) {
                 NavDisplay(
                     entries = navigationState.toDecoratedEntries(entryProvider),

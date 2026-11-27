@@ -1,18 +1,12 @@
 package io.github.lorber13.jellyfinmusic.feature.player
 
-import io.github.lorber13.jellyfinmusic.core.playback.MusicPlayer
 import io.github.lorber13.jellyfinmusic.core.playback.PlaybackPosition
 import io.github.lorber13.jellyfinmusic.core.playback.PlayerState
-import io.github.lorber13.jellyfinmusic.core.playback.QueueItem
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -41,7 +35,17 @@ class MiniPlayerViewModelTest {
     @Test
     fun state_isThePlayersState() {
         val viewModel = MiniPlayerViewModel(musicPlayer)
-        val playing = PlayerState("Boiler Room", "The Copper Kettles", null, true, false, true)
+        val playing = PlayerState(
+            title = "Boiler Room",
+            artist = "The Copper Kettles",
+            album = "Steam & Rust",
+            artworkUrl = null,
+            isPlaying = true,
+            isLoading = false,
+            isSeekable = true,
+            hasPrevious = true,
+            hasNext = true
+        )
 
         musicPlayer.state.value = playing
 
@@ -79,23 +83,5 @@ class MiniPlayerViewModelTest {
     @Test
     fun progressOf_aPositionPastTheEnd_isFull() {
         assertEquals(1f, progressOf(PlaybackPosition(position = 4.minutes + 1.seconds, duration = 4.minutes)))
-    }
-
-    private class FakeMusicPlayer : MusicPlayer {
-        val commands = mutableListOf<String>()
-
-        override val state = MutableStateFlow<PlayerState?>(null)
-        override val positions = MutableSharedFlow<PlaybackPosition>()
-        override val errorMessages: Flow<String> = emptyFlow()
-
-        override fun play(queue: List<QueueItem>, startIndex: Int) = Unit
-
-        override fun playOrPause() {
-            commands += "playOrPause"
-        }
-
-        override fun skipToNext() {
-            commands += "skipToNext"
-        }
     }
 }

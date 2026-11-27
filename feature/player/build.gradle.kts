@@ -2,6 +2,7 @@ plugins {
     id("jellyfinmusic.android.library")
     id("jellyfinmusic.android.compose")
     id("jellyfinmusic.hilt")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -16,6 +17,10 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:playback"))
 
+    implementation(libs.navigation3.runtime)
+    // For the Now Playing screen's own transitions, set in its entry's metadata.
+    implementation(libs.navigation3.ui)
+    implementation(libs.kotlinx.serialization.core)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
     testImplementation(libs.junit)

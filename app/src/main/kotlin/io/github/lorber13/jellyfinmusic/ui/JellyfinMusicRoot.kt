@@ -17,12 +17,15 @@ import io.github.lorber13.jellyfinmusic.feature.login.QuickConnectRoute
 import io.github.lorber13.jellyfinmusic.feature.login.ServerAddressRoute
 import io.github.lorber13.jellyfinmusic.feature.login.SignInRoute
 import io.github.lorber13.jellyfinmusic.feature.login.loginEntries
+import io.github.lorber13.jellyfinmusic.feature.player.NowPlayingRoute
+import io.github.lorber13.jellyfinmusic.feature.player.playerEntries
 import io.github.lorber13.jellyfinmusic.navigation.AppShellRoute
 
 /**
- * The app's top-level navigation: the sign-in screens, then the app shell. They share one back
- * stack, so moving from one to the other animates like any other screen change. The sign-in
- * screens fill the whole window, without the navigation bar.
+ * The app's top-level navigation: the sign-in screens, then the app shell, with Now Playing over
+ * it while open. They share one back stack, so moving from one to the other animates like any
+ * other screen change. The sign-in screens and Now Playing fill the whole window, without the
+ * navigation bar.
  */
 @Composable
 fun JellyfinMusicRoot(viewModel: RootViewModel = hiltViewModel()) {
@@ -68,8 +71,19 @@ private fun RootNavDisplay(isSignedIn: Boolean) {
             entry<AppShellRoute> {
                 // The shell never runs without a signed-in user. Without a session the entry stays
                 // empty for the moment it takes the effect above to go back to the sign-in screens.
-                if (isSignedIn) JellyfinMusicApp()
+                if (isSignedIn) {
+                    JellyfinMusicApp(
+                        onOpenNowPlaying = {
+                            // A second tap while the screen slides in would add it twice, and
+                            // the same route can only be on the back stack once.
+                            if (NowPlayingRoute !in backStack) backStack.add(NowPlayingRoute)
+                        }
+                    )
+                }
             }
+            // Removed by its key, not as the last screen: Now Playing also closes itself when
+            // nothing is queued, which can happen while it is already sliding away.
+            playerEntries(onCloseNowPlaying = { backStack.remove(NowPlayingRoute) })
         }
     )
 }

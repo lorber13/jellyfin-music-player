@@ -1,5 +1,6 @@
 package io.github.lorber13.jellyfinmusic.core.playback
 
+import kotlin.time.Duration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -33,6 +34,15 @@ interface MusicPlayer {
     /** Pauses what is playing, or plays what is paused. Call it on the main thread. */
     fun playOrPause()
 
+    /**
+     * Goes back to the start of the track, or to the track before when this one has only just
+     * started, like the media notification's Previous button. Call it on the main thread.
+     */
+    fun skipToPrevious()
+
     /** Skips to the next track. Call it on the main thread. */
     fun skipToNext()
+
+    /** Moves the current track to [position]. Call it on the main thread. */
+    fun seekTo(position: Duration)
 }
