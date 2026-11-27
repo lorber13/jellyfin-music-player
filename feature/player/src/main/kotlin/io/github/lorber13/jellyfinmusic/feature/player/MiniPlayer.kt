@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,11 +82,13 @@ internal fun MiniPlayerContent(
     onSkipToNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // The background reaches the window's edges; the content stays clear of the system bars.
+    // The background reaches the window's edges; the content stays clear of the system bars and
+    // the camera cutout. Not of the keyboard (safeDrawing would include it): the bar stays behind it.
+    val barInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
     Surface(modifier = modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surfaceContainer) {
         Column(
             modifier = Modifier.windowInsetsPadding(
-                WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                barInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
             )
         ) {
             TrackProgressLine(progress = progress, isLoading = state.isLoading)
