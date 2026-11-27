@@ -74,7 +74,7 @@ private fun RootNavDisplay(isSignedIn: Boolean) {
                 if (isSignedIn) {
                     JellyfinMusicApp(
                         onOpenNowPlaying = {
-                            // A second tap while the screen slides in would add it twice, and
+                            // A second tap while the screen opens would add it twice, and
                             // the same route can only be on the back stack once.
                             if (NowPlayingRoute !in backStack) backStack.add(NowPlayingRoute)
                         }
@@ -82,7 +82,7 @@ private fun RootNavDisplay(isSignedIn: Boolean) {
                 }
             }
             // Removed by its key, not as the last screen: Now Playing also closes itself when
-            // nothing is queued, which can happen while it is already sliding away.
+            // nothing is queued, which can happen while it is already closing.
             playerEntries(onCloseNowPlaying = { backStack.remove(NowPlayingRoute) })
         }
     )
