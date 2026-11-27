@@ -19,7 +19,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **LIB-02 Artists list**, alphabetical with quick A–Z scrolling.
 - **LIB-03 Albums list**, sortable by name, year or date added.
 - **LIB-04 Playlists list.**
-- **LIB-05 Genres list** and genre detail showing the albums in that genre.
+- **LIB-05 Genre filter**: the albums list can show the albums of one genre.
 - **LIB-06 Artist detail**: albums and top tracks.
 - **LIB-07 Album detail**: track list, total duration, year.
 - **LIB-08 Playlist detail**: track list and total duration.
@@ -29,6 +29,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **LIB-12 Large library support**: browsing stays smooth with 10,000+ albums, also in the tracks list (LIB-13), which holds all of their tracks.
 - **LIB-13 Tracks list**: every track in the library, sortable like the albums list. Sorted by date added, the newest track comes first, even within an album. Tracks that tie in the chosen sort keep their album, disc and track order. Like the albums and artists lists, it can show favorites only (LIB-10). Tapping a track plays it and then the rest of the list in that order.
 - **LIB-14 Recently played sort**: the albums and tracks lists can also be sorted by when they were last played.
+- **LIB-15 Sort and filter chips**: the library lists show their sort and filters as chips at the top of the list. Favorites and downloaded turn on or off with one tap; the sort and genre chips open a menu.
 
 ## 3. Playlist editing
 - **PL-01 Create a playlist.** It is saved on the server.
@@ -40,7 +41,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 
 ## 4. Playback
 - **PLY-01 Play** a track, album, playlist or artist.
-- **PLY-02 Shuffle** an album, playlist, artist or the whole library.
+- **PLY-02 Shuffle** an album, playlist, artist or the whole library, or a library list with its filters, such as favorite tracks or the albums of a genre.
 - **PLY-03 Play next / Add to queue.**
 - **PLY-04 Queue management**: view, reorder, remove, clear.
 - **PLY-05 Repeat modes**: off, all, one.
@@ -67,7 +68,7 @@ This document lists **what** the app does. It does not say **when**: features ar
 - **OFF-06 Downloads screen**: progress, size, pause/resume/cancel/delete, and total storage used.
 - **OFF-07 Download location**: internal storage or SD card, with existing downloads moved when it changes. If the SD card is removed, its downloads show as unavailable but aren't deleted.
 - **OFF-08 Recently-played cache**: streamed songs are kept automatically up to a size limit (default 1 GB) so replays need no data and can work offline.
-- **OFF-09 Offline mode**: no connection is detected automatically. An offline indicator appears, songs that can't be played are dimmed, and a playing queue skips them.
+- **OFF-09 Offline mode**: no connection is detected automatically. An offline indicator appears, and the library lists show only music that can be played (downloaded or cached), with an option to show the rest. Songs that can't be played are dimmed, and a playing queue skips them.
 - **OFF-10 Downloads survive** app updates and logging back in to the same account.
 - **OFF-11 Downloaded indicator** on tracks, albums and playlists throughout the app. The albums, artists, playlists and tracks lists can show downloaded music only.
 
@@ -118,7 +119,8 @@ This document lists **what** the app does. It does not say **when**: features ar
 - Casting: Chromecast, DLNA/UPnP, remote-controlling other Jellyfin clients
 - Editing server metadata (tags, artwork, album info)
 - A merged view combining several servers' libraries (account switching, ACC-08, is in scope)
-- A Home screen on the phone with Recently played, Recently added, Favorites and Downloaded sections (formerly LIB-01). The app is built around the library lists instead, whose sorts and filters show the same music (LIB-03, LIB-10, LIB-13, LIB-14, OFF-11). The car keeps its Home (AUTO-02).
+- A Home screen on the phone with Recently played, Recently added, Favorites and Downloaded sections (formerly LIB-01). The app is built around the library lists instead, whose sorts and filters show the same music (LIB-03, LIB-10, LIB-13, LIB-14, LIB-15, OFF-11). The car keeps its Home (AUTO-02).
+- A Genres tab or genres list on the phone (formerly part of LIB-05). Genres are a filter of the albums list instead (LIB-05). The car keeps its Genres (AUTO-02).
 - Analytics, crash reporting or any tracking
 
 ## 10. Product constraints

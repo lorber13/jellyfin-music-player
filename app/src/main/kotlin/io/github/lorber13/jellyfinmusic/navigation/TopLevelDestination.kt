@@ -9,8 +9,8 @@ import io.github.lorber13.jellyfinmusic.feature.albums.AlbumsRoute
 /**
  * The tabs of the navigation bar (or rail), in display order. The first one is where the app opens.
  *
- * The tabs are the library lists: Albums, then Artists (LIB-02), Playlists (LIB-04), Genres (LIB-05)
- * and Tracks (LIB-13), each added when its list is built.
+ * The tabs are the library lists: Albums, then Artists (LIB-02), Playlists (LIB-04) and Tracks
+ * (LIB-13), each added when its list is built.
  */
 enum class TopLevelDestination(
     /** The first screen of the tab, at the bottom of its back stack. */
