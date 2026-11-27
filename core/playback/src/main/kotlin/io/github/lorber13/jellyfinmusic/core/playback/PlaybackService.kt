@@ -18,8 +18,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.lorber13.jellyfinmusic.core.data.stream.StreamRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 
 /**
@@ -46,7 +48,12 @@ class PlaybackService : MediaSessionService() {
         // Hilt injects the fields here, so the player is built after it.
         super.onCreate()
         useAppNotificationIcon()
-        val playableFormats = directPlayFormatsOf(decodableAudioCodecs())
+        // The app connects to this service as it opens, so the service is created before the
+        // app's first frame. Asking the phone for its decoders takes tens of milliseconds, so it
+        // happens on a background thread when the first track is looked up instead.
+        val playableFormats = serviceScope.async(Dispatchers.Default, start = CoroutineStart.LAZY) {
+            directPlayFormatsOf(decodableAudioCodecs())
+        }
         val sessionBuilder = MediaSession.Builder(this, buildPlayer())
             .setCallback(TrackStreamCallback(streams, playableFormats, resources, serviceScope))
         openAppIntent()?.let(sessionBuilder::setSessionActivity)

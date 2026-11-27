@@ -13,12 +13,14 @@ import io.github.lorber13.jellyfinmusic.core.data.stream.StreamKind
 import io.github.lorber13.jellyfinmusic.core.data.stream.StreamRepository
 import io.github.lorber13.jellyfinmusic.core.data.stream.TrackStream
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.guava.future
 
 /**
  * Turns the track ids that controllers ask for into stream addresses the player can load: the
- * original file when the phone plays its format ([playableFormats]), else the server's
- * conversion. Finding out takes a request to the server per track, which runs in [scope].
+ * original file when the phone plays its format ([playableFormats], read when the first track is
+ * looked up), else the server's conversion. Finding out takes a request to the server per track,
+ * which runs in [scope].
  *
  * Tracks without a stream are left out, and the controller that asked for them gets an error
  * saying so, worded for the user with [resources]. When that controller is a system one, such as
@@ -26,7 +28,7 @@ import kotlinx.coroutines.guava.future
  */
 internal class TrackStreamCallback(
     private val streams: StreamRepository,
-    private val playableFormats: List<DirectPlayFormat>,
+    private val playableFormats: Deferred<List<DirectPlayFormat>>,
     private val resources: Resources,
     private val scope: CoroutineScope
 ) : MediaSession.Callback {
@@ -60,7 +62,7 @@ internal class TrackStreamCallback(
 
     /** [mediaItems] with their stream, or null for those that have none. */
     private suspend fun withStreams(mediaItems: List<MediaItem>): List<MediaItem?> {
-        val trackStreams = streams.streamsOf(mediaItems.map { it.mediaId }, playableFormats)
+        val trackStreams = streams.streamsOf(mediaItems.map { it.mediaId }, playableFormats.await())
         return playableMediaItemsOf(mediaItems, trackStreams)
     }
 
