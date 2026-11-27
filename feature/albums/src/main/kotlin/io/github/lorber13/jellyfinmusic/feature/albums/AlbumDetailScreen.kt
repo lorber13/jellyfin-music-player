@@ -55,6 +55,7 @@ import io.github.lorber13.jellyfinmusic.core.data.library.LibraryFailure
 import io.github.lorber13.jellyfinmusic.core.data.library.Track
 import io.github.lorber13.jellyfinmusic.core.designsystem.component.AlbumCover
 import io.github.lorber13.jellyfinmusic.core.designsystem.component.NavigateBackButton
+import io.github.lorber13.jellyfinmusic.core.designsystem.format.formatTrackDuration
 import io.github.lorber13.jellyfinmusic.core.designsystem.theme.JellyfinMusicTheme
 import java.util.Locale
 import kotlin.time.Duration
@@ -62,8 +63,6 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val HEADER_ITEM_KEY = "header"
 private const val MINUTES_PER_HOUR = 60L
-private const val SECONDS_PER_MINUTE = 60L
-private const val SECONDS_PER_HOUR = 3600L
 
 @Composable
 internal fun AlbumDetailScreen(albumId: String, onNavigateBack: () -> Unit) {
@@ -300,23 +299,6 @@ private fun AlbumLoadFailure(reason: LibraryFailure, onRetry: () -> Unit, modifi
             Text(stringResource(R.string.feature_albums_retry))
         }
     }
-}
-
-/**
- * A track's length as a clock reading in the user's language, such as "3:45" or "1:02:03".
- * Unlike `DateUtils.formatElapsedTime`, minutes have no leading zero, as in other music apps.
- */
-internal fun formatTrackDuration(duration: Duration, locale: Locale): String {
-    val totalSeconds = duration.inWholeSeconds
-    val hours = totalSeconds / SECONDS_PER_HOUR
-    val minutes = totalSeconds % SECONDS_PER_HOUR / SECONDS_PER_MINUTE
-    val seconds = totalSeconds % SECONDS_PER_MINUTE
-    val measures = buildList {
-        if (hours > 0) add(Measure(hours, MeasureUnit.HOUR))
-        add(Measure(minutes, MeasureUnit.MINUTE))
-        add(Measure(seconds, MeasureUnit.SECOND))
-    }
-    return MeasureFormat.getInstance(locale, MeasureFormat.FormatWidth.NUMERIC).formatMeasures(*measures.toTypedArray())
 }
 
 /**

@@ -142,13 +142,6 @@ class AlbumDetailContentTest {
         assertEquals("0 min", formatAlbumDuration(Duration.ZERO, Locale.US))
     }
 
-    @Test
-    fun trackDuration_isAClockReadingWithoutALeadingZero() {
-        assertEquals("3:45", formatTrackDuration(3.minutes + 45.seconds, Locale.US))
-        assertEquals("0:07", formatTrackDuration(7.seconds, Locale.US))
-        assertEquals("1:02:03", formatTrackDuration(62.minutes + 3.seconds, Locale.US))
-    }
-
     private fun track(
         id: String,
         name: String,
