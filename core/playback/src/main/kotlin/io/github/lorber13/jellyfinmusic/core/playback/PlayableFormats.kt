@@ -77,7 +77,7 @@ private val requiredAudioCodecs: Set<AudioCodec> =
  *
  * When the phone fails to list them, as some do (ExoPlayer guards the same query), the ones every
  * phone must have, so that only tracks in optional formats are converted. If the player can't
- * find its decoders either, playback can still fail later, with an error instead of silence.
+ * find its decoders either, playback can still fail later, in the player.
  */
 internal fun decodableAudioCodecs(): Set<AudioCodec> = try {
     MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos
